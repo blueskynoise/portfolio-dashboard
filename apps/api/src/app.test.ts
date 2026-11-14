@@ -243,6 +243,31 @@ describe('the gate is enforced by the server', () => {
     expect((await get('/static/app-def.js', cookies)).headers['cache-control']).toContain('private');
   });
 
+  it('opens the script policy to the analytics vendor only when it is configured, and never on the gate', async () => {
+    h = await harness();
+    const off = (await get('/api/gate/config')).json();
+    expect(off.visitorAnalytics).toEqual({ provider: 'dreamdata', configured: false, cookieless: true });
+    expect(off.providers.find((p: { name: string }) => p.name === 'Dreamdata').configured).toBe(false);
+    const { cookies: plain } = await assess(h);
+    expect((await get('/', plain)).headers['content-security-policy']).not.toMatch(/dreamdata|drda/);
+    await h.app.close();
+
+    h = await harness({ config: { dreamdata: { writeKey: 'test-write-key', cookieless: true } } });
+    expect((await get('/api/gate/config')).json().visitorAnalytics).toEqual({ provider: 'dreamdata', configured: true, writeKey: 'test-write-key', cookieless: true });
+    expect((await get('/')).headers['content-security-policy']).not.toMatch(/dreamdata|drda/);
+    const { cookies } = await assess(h);
+    const policy = String((await get('/', cookies)).headers['content-security-policy']);
+    expect(policy).toContain("script-src 'self' https://cdn.dreamdata.cloud https://cdn.drda.io");
+    expect(policy).toContain("connect-src 'self' https://cdn.dreamdata.cloud https://cdn.drda.io");
+    expect(policy).toContain("default-src 'none'");
+    expect(policy).not.toContain('cloudflare');
+    await h.app.close();
+
+    h = await harness({ config: { dreamdata: { writeKey: 'test-write-key', cookieless: false } } });
+    const strict = await assess(h);
+    expect((await get('/', strict.cookies)).headers['content-security-policy']).not.toContain('drda.io');
+  });
+
   it('cannot be walked out of the build directory', async () => {
     h = await harness();
     const { cookies } = await assess(h);

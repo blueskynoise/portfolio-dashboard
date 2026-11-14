@@ -240,6 +240,12 @@ export interface GateConfig {
   sessionTtlMinutes: number;
   retentionDays: number;
   botVerification: { provider: 'turnstile'; configured: boolean; siteKey?: string };
+  /**
+   * Company-level visit analytics, run by a third party in the visitor's browser after admission.
+   * `cookieless`: visitors who have not chosen are measured without cookies or stored identifiers.
+   * The write key is a public identifier (it ships in the page), not a secret.
+   */
+  visitorAnalytics: { provider: 'dreamdata'; configured: boolean; writeKey?: string; cookieless: boolean };
   providers: { name: string; purpose: string; configured: boolean; note: string }[];
 }
 

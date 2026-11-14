@@ -64,6 +64,7 @@ See `.env.example`. In production the server refuses to start without `SESSION_S
 | IPinfo Lite | Second opinion on network operator and country | Free, unlimited | `IPINFO_TOKEN` |
 | Tor Project exit list | Tor exit membership | Free, no key | none |
 | AbuseIPDB | Abuse reports about an address | Free, 1,000/day | `ABUSEIPDB_API_KEY` |
+| Dreamdata | Company-level visit analytics for the site owner, in the browser after admission; not part of the access decision | Per your Dreamdata plan | `DREAMDATA_WRITE_KEY`, `DREAMDATA_COOKIELESS` |
 
 Details, limits and what was ruled out: [docs/PROVIDERS.md](docs/PROVIDERS.md).
 
@@ -83,4 +84,6 @@ Details, limits and what was ruled out: [docs/PROVIDERS.md](docs/PROVIDERS.md).
   report rather than implying otherwise.
 - A browser fingerprint identifies a browser configuration, not a person. Recognition results state their confidence and
   what argues against them.
+- When `DREAMDATA_WRITE_KEY` is set, one third-party analytics tag runs after admission, and the site says so in its notice,
+  its footer and its "what was not collected" section. It can be turned off by the visitor, and is never on the gate.
 - This is a public portfolio. Nothing confidential is behind the gate; it demonstrates the pattern, and is enforced for real.

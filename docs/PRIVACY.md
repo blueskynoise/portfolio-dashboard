@@ -14,9 +14,12 @@ confirm the lawful basis and notice for the jurisdictions you care about.
 | Session cookie | On ALLOW | Keeps the visitor admitted | Nobody | Server-side session row. |
 | Browser fingerprint (canvas, WebGL, audio, fonts, GPU, screen, hardware, time zone, permissions states, referrer host) | **Only after the visitor opts in** | Show the visitor what fingerprinting reveals; recognize a returning browser | Nobody | Keyed hashes and the rendered report. |
 | Recognition cookie (90 days) | **Only after the visitor opts in** | Link a later visit | Nobody | Keyed hash. |
+| Page views (page address and title, referrer, browser details, IP address as seen by the vendor) | After admission, when `DREAMDATA_WRITE_KEY` is set and the visitor has not turned it off | Let the site owner see which companies visit | Dreamdata, directly from the browser | Not stored by this site. Held by Dreamdata under its own terms. |
+| Dreamdata cookies and stored visitor id | **Only after the visitor allows it** | Link repeat visits in Dreamdata | Dreamdata | In the visitor's browser and at Dreamdata. |
 
 Not collected: names, email addresses, precise location, anything behind a permission prompt, browsing history, any
-cross-site identifier. No advertising or analytics service is loaded.
+cross-site identifier. No advertising is loaded. One third-party analytics tag (Dreamdata) is loaded when configured; with
+no `DREAMDATA_WRITE_KEY` the site loads no third-party analytics at all and says so in its footer.
 
 ## Consent and notice
 
@@ -28,6 +31,13 @@ cross-site identifier. No advertising or analytics service is loaded.
 - Active fingerprinting and the recognition cookie are not necessary for the service, so they are opt-in. The API rejects a
   fingerprint submission without `consent: true`, and sets no cookie.
 - Withdrawal: "Delete my fingerprint and the cookie" on the evaluation page calls `DELETE /api/me/fingerprint`.
+- Dreamdata is disclosed in the notice on the gate, before admission, and is never loaded on the gate itself. After
+  admission a visitor is asked once. With a yes it runs in full (cookies). With a no, nothing is loaded. Before an answer it
+  runs in the vendor's cookieless mode if `DREAMDATA_COOKIELESS=on`, unless the browser sends Global Privacy Control or Do
+  Not Track, in which case it does not run. The choice is kept in the browser's local storage and can be changed in the
+  privacy notice on the evaluation page. **Cookieless-before-consent is the second assumption to verify with counsel**: it
+  stores nothing on the device, but it still sends page views and the IP address to a third party for a purpose that is
+  not security. Set `DREAMDATA_COOKIELESS=off` to make the tag strictly opt-in.
 
 ## Retention
 
@@ -53,6 +63,10 @@ calls, sessions, fingerprints and investigations, plus old access events. The no
   [Turnstile Privacy Addendum](https://www.cloudflare.com/turnstile-privacy-policy/) in the site's own privacy notice. The
   reference is in the privacy notice (shown on the gate and on the evaluation page) and, when Turnstile is configured, in a
   line at the foot of the gate. Keep both if the notice is rewritten.
+
+- **Dreamdata**: acts as a processor for the site owner. Confirm its data processing agreement is in place and that its
+  description in the notice matches the plan in use (in particular that IP-to-company matching, not person-level
+  identification, is what is enabled).
 
 ## Requests
 

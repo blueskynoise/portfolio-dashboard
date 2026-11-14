@@ -41,6 +41,8 @@ Set these on the web service.
 | `IPAPI_IS_KEY` | From ipapi.is |
 | `IPINFO_TOKEN` | From ipinfo.io (Lite) |
 | `ABUSEIPDB_API_KEY` | Optional |
+| `DREAMDATA_WRITE_KEY` | Optional. The write key from Dreamdata's install snippet. Enables company-level visit analytics. |
+| `DREAMDATA_COOKIELESS` | `on` (default) or `off`. `off` means nothing runs until a visitor allows it. See `docs/PRIVACY.md`. |
 | `ADMIN_PASSWORD_HASH` | See below. Omit to disable the admin interface. |
 
 The server refuses to start in production without `SESSION_SECRET` and `DATABASE_URL`, and prints every problem.

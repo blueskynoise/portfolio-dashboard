@@ -138,10 +138,24 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   };
 
   // ── Cross-cutting hooks ─────────────────────────────────────────────
-  const CSP_BASE = "default-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'";
-  const CSP_APP = `${CSP_BASE}; script-src 'self'`;
-  // The gate alone may load the bot-verification widget.
-  const CSP_GATE = `${CSP_BASE}; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com`;
+  const csp = (extra: { script?: string[]; connect?: string[]; frame?: string[] } = {}): string =>
+    [
+      "default-src 'none'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data:",
+      "font-src 'self'",
+      ["connect-src 'self'", ...(extra.connect ?? [])].join(' '),
+      "base-uri 'none'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      ["script-src 'self'", ...(extra.script ?? [])].join(' '),
+      ...(extra.frame ? [`frame-src ${extra.frame.join(' ')}`] : []),
+    ].join('; ');
+  // Visit analytics, when configured, runs only in the admitted site and only from the vendor's own hosts.
+  const analyticsHosts = config.dreamdata.writeKey ? ['https://cdn.dreamdata.cloud', ...(config.dreamdata.cookieless ? ['https://cdn.drda.io'] : [])] : [];
+  const CSP_APP = csp({ script: analyticsHosts, connect: analyticsHosts });
+  // The gate alone may load the bot-verification widget, and never loads analytics.
+  const CSP_GATE = csp({ script: ['https://challenges.cloudflare.com'], frame: ['https://challenges.cloudflare.com'] });
 
   app.addHook('onRequest', async (req, reply) => {
     reply.header('x-request-id', req.id);
@@ -207,12 +221,14 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     sessionTtlMinutes: config.sessionTtlMinutes,
     retentionDays: config.retentionDays,
     botVerification: { provider: 'turnstile', configured: providers.turnstile.configured, siteKey: providers.turnstile.siteKey },
+    visitorAnalytics: { provider: 'dreamdata', configured: Boolean(config.dreamdata.writeKey), writeKey: config.dreamdata.writeKey, cookieless: config.dreamdata.cookieless },
     providers: [
       { name: 'ipapi.is', purpose: 'Organization, network type, coarse location, VPN/proxy flags', configured: providers.ipapi.configured, note: 'Your IP address is sent to this provider.' },
       { name: 'IPinfo', purpose: 'Network operator and country (second opinion)', configured: providers.ipinfo.configured, note: 'Your IP address is sent to this provider.' },
       { name: 'Tor Project', purpose: 'Tor exit relay list', configured: true, note: 'A public list we download. Your address is not sent anywhere.' },
       { name: 'AbuseIPDB', purpose: 'Abuse reports about the address', configured: providers.abuse.configured, note: 'Your IP address is sent to this provider.' },
       { name: 'Cloudflare Turnstile', purpose: 'Bot verification', configured: providers.turnstile.configured, note: 'Runs a script from Cloudflare in the page; your IP address is included in the verification request.' },
+      { name: 'Dreamdata', purpose: 'Company-level visit analytics, after admission', configured: Boolean(config.dreamdata.writeKey), note: 'Runs a script from Dreamdata in the site once you are admitted; your IP address and the pages you view are sent to it. You can turn it off.' },
     ],
   }));
 

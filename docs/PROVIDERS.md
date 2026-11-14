@@ -38,14 +38,26 @@ Checked in November 2026. Pricing and terms change; re-verify before relying on 
 - Used only as a trigger for bot verification, never to deny. Cached for six hours.
 - Commercial-use terms for the free plan could not be confirmed. Off unless `ABUSEIPDB_API_KEY` is set.
 
+### Dreamdata — company-level visit analytics (optional, runs in the browser)
+- The only provider that runs in the visitor's browser after admission, and the only one that reports to the site owner
+  rather than to the visitor. It matches visits to companies in Dreamdata's own dashboard. Nothing from it feeds the access
+  decision or the visitor's report.
+- Integrated as first-party module code (`apps/web/src/lib/analytics.ts`) that reproduces Dreamdata's install snippet,
+  because the script policy forbids inline scripts. Hosts allowed in the app document's CSP, and only when configured:
+  `cdn.dreamdata.cloud` (script, chunks and the collection API at `/api/v1`) and `cdn.drda.io` (the cookieless build).
+- Three modes per visitor: **full** (cookies and a stored id) only after an explicit yes; **cookieless** before a choice,
+  when `DREAMDATA_COOKIELESS=on`, and never under Global Privacy Control or Do Not Track; **off** after a no.
+- Never loaded on the gate or on `/admin`. Dreamdata's form tracking is left off: the only form on the site is the
+  administrator's sign-in. `intentSources` and Google enhanced conversions are off, as in the supplied snippet.
+- Off unless `DREAMDATA_WRITE_KEY` is set.
+
 ## Investigated and not integrated
 
 ### Leadfeeder (formerly Dealfront)
 A tracking tag that feeds their dashboard with the companies visiting a site. Third-party sources put the free plan at
 about 100 identified companies a month with seven days of history. Whether the free plan includes API access could not
 be confirmed from their own pages. Without an API there is no way to put its attribution into a visitor's report, and
-adding the tag would mean loading a third-party tracker, which this site otherwise avoids. **If you want its dashboard for
-your own lead tracking, it can be added as a consent-gated tag; it was left out by default.**
+adding the tag would mean loading a second third-party tracker. Dreamdata (above) now covers this use.
 
 ### RB2B
 Markets person-level identification of website visitors by matching against data gathered elsewhere. Its own plan

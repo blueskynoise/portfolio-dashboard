@@ -104,6 +104,7 @@ export async function harness(options: HarnessOptions = {}): Promise<Harness> {
     providerDailyLimit: 1000,
     abuseIpdbKey: on.abuse ? 'abuse-key' : undefined,
     adminPasswordHash: on.admin ? hashPassword(ADMIN_PASSWORD) : undefined,
+    dreamdata: { cookieless: true },
     staticDir: '',
     providerTimeoutMs: 80,
     ...options.config,

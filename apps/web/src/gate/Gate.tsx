@@ -250,7 +250,7 @@ export function Gate() {
 
             <details className="card disclosure">
               <summary>What this page did not collect, and what it would take</summary>
-              <Beyond />
+              <Beyond companyAnalytics={config?.visitorAnalytics.configured} />
             </details>
           </>
         )}

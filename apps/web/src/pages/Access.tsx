@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { AssessmentReport, GateConfig, PolicyDocument } from '@portfolio/contracts';
+import { AnalyticsControl } from '../components/AnalyticsConsent';
 import { Contact } from '../components/Chrome';
 import { profile } from '../content/site';
 import { api } from '../lib/api';
 import { useDocumentTitle } from '../lib/hooks';
-import { Ext } from '../lib/router';
+import { Ext, useRouter } from '../lib/router';
 import { Beyond } from '../report/Beyond';
 import { DecisionBanner, Providers, Reasons, Rules, Stages } from '../report/Decision';
 import { FingerprintPanel } from '../report/Fingerprint';
@@ -43,6 +44,17 @@ export function Access() {
       live = false;
     };
   }, []);
+
+  // A link to #privacy opens the notice, which is otherwise folded away and not there until the report loads.
+  const { hash } = useRouter();
+  const privacyRef = useRef<HTMLDetailsElement>(null);
+  const loaded = report !== null;
+  useEffect(() => {
+    const notice = privacyRef.current;
+    if (hash !== '#privacy' || !notice) return;
+    notice.open = true;
+    notice.scrollIntoView({ block: 'start' });
+  }, [hash, loaded]);
 
   const endSession = async () => {
     await api.post('/api/session/end').catch(() => undefined);
@@ -242,11 +254,11 @@ export function Access() {
 
             <details className="card disclosure">
               <summary>What was not collected, and what it would take</summary>
-              <Beyond />
+              <Beyond companyAnalytics={config?.visitorAnalytics.configured} />
             </details>
-            <details className="card disclosure">
+            <details className="card disclosure" id="privacy" ref={privacyRef}>
               <summary>Privacy: what is collected, why, and for how long</summary>
-              <PrivacyNotice config={config} />
+              <PrivacyNotice config={config} analyticsControl={<AnalyticsControl />} />
             </details>
 
             <p className="gate-foot">

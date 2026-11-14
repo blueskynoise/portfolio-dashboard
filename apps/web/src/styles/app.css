@@ -311,3 +311,61 @@ pre { margin: 0; padding: 12px 14px; background: var(--ink); color: #dfe4f5; bor
 .access-title { font-size: clamp(24px, 3vw, 34px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.15; margin-top: 10px; }
 .access .program-hero { padding-bottom: 14px; }
 .hero { padding-bottom: clamp(20px, 3vw, 36px); }
+
+/* ── Visit analytics: the one-time question and the standing control ── */
+.consent {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: min(720px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 14px 16px 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-2);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.consent p {
+  margin: 0;
+  flex: 1 1 300px;
+}
+.consent b {
+  color: var(--ink);
+}
+.consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.consent .btn,
+.consent-control .btn {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+.consent-control {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.consent-control p {
+  margin: 0 0 10px;
+}
+@media (max-width: 640px) {
+  .consent {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .consent p {
+    flex: none;
+  }
+}

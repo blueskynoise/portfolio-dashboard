@@ -1,4 +1,5 @@
 import { profile } from '../content/site';
+import { useAnalytics } from '../lib/analytics';
 import { Ext, Link, useRouter } from '../lib/router';
 
 export function Nav() {
@@ -33,7 +34,14 @@ export function Nav() {
   );
 }
 
+const ANALYTICS_LINE = {
+  full: 'One third-party tag: company-level visit analytics by Dreamdata, with cookies, because you allowed it.',
+  cookieless: 'One third-party tag: company-level visit analytics by Dreamdata, running without cookies.',
+  off: 'Company-level visit analytics by Dreamdata is off for you.',
+} as const;
+
 export function Contact() {
+  const analytics = useAnalytics();
   return (
     <footer className="contact" id="contact" tabIndex={-1}>
       <div className="wrap">
@@ -52,7 +60,8 @@ export function Contact() {
         <div className="fineprint">
           <span>© {profile.name}</span>
           <span>
-            No advertising, no analytics service, no third-party trackers. <Link to="/access">See what this site knows about your visit.</Link>
+            {analytics.configured ? `No advertising. ${ANALYTICS_LINE[analytics.mode]}` : 'No advertising, no analytics service, no third-party trackers.'}{' '}
+            <Link to="/access#privacy">See what this site knows about your visit{analytics.configured ? ', and change this' : ''}.</Link>
           </span>
         </div>
       </div>

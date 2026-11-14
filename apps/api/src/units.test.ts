@@ -219,6 +219,13 @@ describe('configuration', () => {
     expect(() => loadConfig({ TURNSTILE_SITE_KEY: 'only-one' })).toThrow(/set together/);
   });
 
+  it('leaves visit analytics off unless a write key is set, and validates its settings', () => {
+    expect(loadConfig({}).dreamdata).toEqual({ writeKey: undefined, cookieless: true });
+    expect(loadConfig({ DREAMDATA_WRITE_KEY: 'abcd1234-ab12-cd34-ef56-abcdef123456', DREAMDATA_COOKIELESS: 'off' }).dreamdata).toEqual({ writeKey: 'abcd1234-ab12-cd34-ef56-abcdef123456', cookieless: false });
+    expect(() => loadConfig({ DREAMDATA_WRITE_KEY: "x'; script-src *" })).toThrow(/DREAMDATA_WRITE_KEY/);
+    expect(() => loadConfig({ DREAMDATA_COOKIELESS: 'maybe' })).toThrow(/DREAMDATA_COOKIELESS/);
+  });
+
   it('defaults to trusting only the socket locally and X-Real-IP in production', () => {
     expect(loadConfig({}).clientIpSource).toBe('socket');
     expect(loadConfig({ NODE_ENV: 'production', SESSION_SECRET: 'x'.repeat(40), DATABASE_URL: 'postgres://x' }).clientIpSource).toBe('x-real-ip');

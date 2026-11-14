@@ -3,10 +3,17 @@
  *
  * Static and descriptive on purpose: these are capabilities that exist,
  * listed so a visitor can see where the line was drawn here. Nothing in
- * this file collects anything.
+ * this file collects anything. The one place the line moved (a company
+ * analytics tag, when configured) is stated rather than left out.
  */
 
-const TIERS: { title: string; needs: string; items: string[] }[] = [
+interface Tier {
+  title: string;
+  needs: string;
+  items: string[];
+}
+
+const tiers = (companyAnalytics: boolean): Tier[] => [
   {
     title: 'With a permission prompt',
     needs: 'You would be asked, and could refuse.',
@@ -24,7 +31,9 @@ const TIERS: { title: string; needs: string; items: string[] }[] = [
       'Company identification tags (Leadfeeder and similar) match your address against their own database of business networks and report the organization, often with firmographics.',
       'Person-level "identity resolution" services (RB2B and similar) go further, matching a visit against data co-ops built from logins on other sites to suggest a named individual. Coverage is partial and mostly US.',
       'Advertising networks link a browser to a profile built across every site that carries their tags.',
-      'None of these is used here. The organization shown above comes from public address-registration records, looked up on our own server.',
+      companyAnalytics
+        ? 'One of these is used here: a company-identification tag from Dreamdata, described in the privacy notice below, which you can turn off. It reports to the site owner, and nothing from it appears on this page: the organization shown above comes from public address-registration records, looked up on our own server. No person-level service and no advertising network is used.'
+        : 'None of these is used here. The organization shown above comes from public address-registration records, looked up on our own server.',
     ],
   },
   {
@@ -39,10 +48,10 @@ const TIERS: { title: string; needs: string; items: string[] }[] = [
   },
 ];
 
-export function Beyond() {
+export function Beyond({ companyAnalytics = false }: { companyAnalytics?: boolean }) {
   return (
     <div className="beyond">
-      {TIERS.map((tier) => (
+      {tiers(companyAnalytics).map((tier) => (
         <section key={tier.title}>
           <h3>{tier.title}</h3>
           <p className="beyond-needs">{tier.needs}</p>

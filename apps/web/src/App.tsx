@@ -1,6 +1,8 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { AnalyticsConsent } from './components/AnalyticsConsent';
 import { Nav } from './components/Chrome';
 import { projectBySlug } from './content/projects';
+import { startAnalytics, trackPage } from './lib/analytics';
 import { useDocumentTitle } from './lib/hooks';
 import { Link, useRouter } from './lib/router';
 import { CaseStudy } from './pages/CaseStudy';
@@ -53,12 +55,20 @@ function Page() {
 }
 
 export function App() {
+  const { path } = useRouter();
+  useEffect(() => startAnalytics(), []);
+  // One page view per route. The first is sent by the loader itself once it knows whether it may run.
+  useEffect(() => {
+    const timer = window.setTimeout(trackPage, 0);
+    return () => window.clearTimeout(timer);
+  }, [path]);
   return (
     <>
       <Nav />
       <Suspense fallback={<main id="main" className="wrap section" aria-busy="true" style={{ minHeight: '60vh' }} />}>
         <Page />
       </Suspense>
+      <AnalyticsConsent />
     </>
   );
 }

@@ -29,6 +29,8 @@ export interface Config {
   providerDailyLimit: number;
   abuseIpdbKey?: string;
   adminPasswordHash?: string;
+  /** Third-party company-level visit analytics. Off unless a write key is set. */
+  dreamdata: { writeKey?: string; cookieless: boolean };
   staticDir: string;
   providerTimeoutMs: number;
 }
@@ -70,6 +72,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const plan = text('IPINFO_PLAN') ?? 'lite';
   if (plan !== 'lite' && plan !== 'core') problems.push('IPINFO_PLAN must be lite or core');
 
+  const dreamdataKey = text('DREAMDATA_WRITE_KEY');
+  if (dreamdataKey && !/^[A-Za-z0-9-]{8,64}$/.test(dreamdataKey)) problems.push('DREAMDATA_WRITE_KEY does not look like a Dreamdata write key');
+  const cookieless = text('DREAMDATA_COOKIELESS') ?? 'on';
+  if (cookieless !== 'on' && cookieless !== 'off') problems.push('DREAMDATA_COOKIELESS must be on or off');
+
   const config: Config = {
     env: mode,
     port: integer('PORT', 8787, 1, 65535),
@@ -87,6 +94,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     providerDailyLimit: integer('PROVIDER_DAILY_LIMIT', 900, 1, 1_000_000),
     abuseIpdbKey: text('ABUSEIPDB_API_KEY'),
     adminPasswordHash: text('ADMIN_PASSWORD_HASH'),
+    dreamdata: { writeKey: dreamdataKey, cookieless: cookieless === 'on' },
     staticDir: text('STATIC_DIR') ?? 'apps/web/dist',
     providerTimeoutMs: integer('PROVIDER_TIMEOUT_MS', 2500, 200, 10000),
   };

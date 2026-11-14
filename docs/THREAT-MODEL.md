@@ -39,14 +39,15 @@ which shapes several choices below.
 | Provider returns garbage or a false success | Shape checks on every response; an unparseable 200 is a failure; the Tor list is rejected if implausibly small. | A provider returning well-formed wrong data. Signals are labeled as third-party evidence. |
 | Poisoned analytics | Analytics read only server-written rows. Client-supplied strings are bounded and rendered as text. | Organization names come from a provider and are shown to the admin as inferences. |
 | Cross-visitor disclosure | A visitor's report is addressed only through their own session; there is no report id in any URL. Tested. | None known. |
-| XSS | React escaping, no `dangerouslySetInnerHTML`, strict CSP (`default-src 'none'`, scripts from self only; the gate additionally allows Turnstile). | `style-src 'unsafe-inline'` is allowed for inline styles. |
+| XSS | React escaping, no `dangerouslySetInnerHTML`, strict CSP (`default-src 'none'`, scripts from self only; the gate additionally allows Turnstile, and the admitted site additionally allows the analytics vendor when configured). | `style-src 'unsafe-inline'` is allowed for inline styles. |
 | Secrets in logs | Tokens are sent in headers or bodies, never URLs; logs redact cookies and omit addresses. | Provider-side logging is outside our control. |
-| Fingerprinting library phoning home | Configured with no API key, logging off, beacon off; `connect-src 'self'` blocks it regardless. | A future library version could change behavior; the CSP is the backstop. |
+| Third-party analytics script (Dreamdata, optional) | Loaded only in the admitted site, never on the gate or `/admin`; CSP allows only the vendor's two hosts for scripts and connections; session and admin cookies are `HttpOnly`; form tracking off; full mode needs an explicit yes. | The script runs in the site's origin, so a compromise of the vendor's CDN could read anything the page can (not the session cookies). No subresource integrity is possible because the vendor updates the file in place. This is the cost of the tag. |
+| Fingerprinting library phoning home | Configured with no API key, logging off, beacon off; `connect-src` allows only this origin (plus the analytics vendor's hosts when that is configured), which blocks it regardless. | A future library version could change behavior; the CSP is the backstop. |
 
 ## Privacy threats
 
 - **Function creep.** The data could be used to profile visitors. Mitigations: truncated addresses, keyed hashes, 30-day
-  retention enforced by a job, organization-level attribution only, no third-party tracking tags.
+  retention enforced by a job, organization-level attribution only. One third-party tag (Dreamdata, optional) runs after admission under the limits below.
 - **Re-identification through fingerprints.** Stored only with consent, keyed with a server secret so they are useless
   outside this database, deletable by the visitor.
 - **Over-claiming.** The system could present inferences as facts. Mitigations: every signal carries its kind (observed,
