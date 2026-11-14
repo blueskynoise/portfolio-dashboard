@@ -47,6 +47,15 @@ export function PrivacyNotice({ config }: { config: GateConfig | null }) {
           </ul>
         </>
       )}
+      <h4>Bot verification by Cloudflare Turnstile</h4>
+      <p>
+        Where it is configured, this site uses Cloudflare Turnstile in invisible mode to tell browsers from automated clients. It runs in the
+        background with no visible widget. Cloudflare collects and processes data from your browser to do this, as described in{' '}
+        <a className="text-link" href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">
+          Cloudflare’s Turnstile Privacy Addendum
+        </a>
+        .
+      </p>
       <p>Questions or a deletion request: hello@markgraziano.com.</p>
     </div>
   );

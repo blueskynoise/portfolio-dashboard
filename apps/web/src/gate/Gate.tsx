@@ -169,7 +169,7 @@ export function Gate() {
             )}
           </DecisionBanner>
         )}
-        {report?.decision === 'CHALLENGE' && <p className="gate-note">Cloudflare Turnstile will appear below. It usually resolves without a puzzle.</p>}
+        {report?.decision === 'CHALLENGE' && <p className="gate-note">The check runs again in the background. It usually resolves without you doing anything.</p>}
         {report?.decision === 'DENY' && <p className="gate-note">Quote request {report.requestId.slice(0, 8)}. The limit lifts by itself in about ten minutes.</p>}
 
         {/* While working, the steps are the main event. Afterwards they fold away behind the decision. */}
@@ -185,7 +185,7 @@ export function Gate() {
             <StepList steps={steps} />
           </section>
         )}
-        {/* Turnstile renders here. It stays empty unless Cloudflare needs the visitor to do something. */}
+        {/* Turnstile mounts here. In invisible mode it shows nothing; in managed mode it appears only if Cloudflare needs the visitor to act. */}
         <div ref={widget} className="turnstile-slot" />
 
         {phase.name === 'unavailable' && (
@@ -264,6 +264,15 @@ export function Gate() {
           This is a public portfolio. Nothing confidential sits behind this gate; it exists to show how such a system is built, and it is enforced by the
           server all the same. Assessment <span className="mono">{report?.id ?? 'pending'}</span>
         </p>
+        {config?.botVerification.configured && (
+          <p className="gate-foot">
+            Bot verification runs invisibly using Cloudflare Turnstile. See{' '}
+            <a className="text-link" href="https://www.cloudflare.com/turnstile-privacy-policy/" target="_blank" rel="noopener noreferrer">
+              Cloudflare’s Turnstile Privacy Addendum
+            </a>
+            .
+          </p>
+        )}
       </main>
     </div>
   );

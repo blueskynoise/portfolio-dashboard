@@ -48,7 +48,11 @@ calls, sessions, fingerprints and investigations, plus old access events. The no
   address is a small excerpt, but confirm this reading of their terms before relying on it.
 - **AbuseIPDB**: the commercial-use terms of the free plan could not be confirmed during development. It is optional and
   off unless a key is set.
-- **Cloudflare Turnstile**: loads a script from Cloudflare on the gate page.
+- **Cloudflare Turnstile**: loads a script from Cloudflare on the gate page. The widget is configured in **invisible mode**,
+  and Cloudflare makes that conditional on referencing its
+  [Turnstile Privacy Addendum](https://www.cloudflare.com/turnstile-privacy-policy/) in the site's own privacy notice. The
+  reference is in the privacy notice (shown on the gate and on the evaluation page) and, when Turnstile is configured, in a
+  line at the foot of the gate. Keep both if the notice is rewritten.
 
 ## Requests
 
