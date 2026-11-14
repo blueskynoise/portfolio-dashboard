@@ -63,7 +63,7 @@ Status as of the last commit on `feature/portfolio-redesign`. "Verified" says ho
 | Admin analytics behind authentication | Done; tested |
 | Architecture, threat model, privacy, provider and deployment docs | Done |
 | CI workflow | Written. **Never run** (the branch has not been pushed) |
-| Railway deployment | Deployed to a Railway-generated URL with Postgres. Health, gate enforcement, session cookie and header-spoofing checks passed with curl. **No provider keys set yet, no custom domain, and not yet checked in a browser** |
+| Railway deployment | Deployed to a Railway-generated URL with Postgres. Health, gate enforcement, session cookie and header-spoofing checks passed with curl, and the gate-to-portfolio flow was checked in Chrome. Deploys automatically from the connected GitHub branch. **No provider keys set yet and no custom domain** |
 | Mobile layout of the new pages | **Checked at 606px only** (no horizontal overflow). Not checked at phone widths or on a device |
 | Accessibility | Keyboard-operable controls, labeled regions, reduced-motion CSS. **No screen-reader testing** |
 | Legal review of notice and consent | **Not done.** See PRIVACY.md |
