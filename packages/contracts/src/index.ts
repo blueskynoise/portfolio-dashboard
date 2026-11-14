@@ -330,3 +330,32 @@ export interface AdminAssessmentRow {
   totalMs: number;
   investigation: { status: 'open' | 'closed'; note: string } | null;
 }
+
+// ── Public gateway health ─────────────────────────────────────────────
+
+/**
+ * What anyone may see about the gateway: aggregates only.
+ *
+ * With little traffic even an aggregate can describe one person ("one
+ * evaluation today, challenged"). So nothing about outcomes is published
+ * until the window holds a minimum number of evaluations, and counts are
+ * rounded down. Nothing here is broken out by network, organisation,
+ * browser or time of day.
+ */
+export interface PublicHealth {
+  generatedAt: string;
+  windowDays: number;
+  policyVersion: string;
+  /** False when there are too few evaluations to publish outcome figures. */
+  sufficient: boolean;
+  minimumToPublish: number;
+  /** Rounded down to the nearest ten. Null when not sufficient. */
+  evaluations: number | null;
+  /** Whole percentages. Null when not sufficient. */
+  decisions: { allow: number; challenge: number; deny: number } | null;
+  standardAssurance: number | null;
+  latency: { p50: number; p95: number } | null;
+  /** Provider failures recorded as full-assurance decisions. Should always be zero. */
+  failuresCountedAsPasses: number | null;
+  providers: { name: string; state: 'healthy' | 'degraded' | 'no_live_calls' | 'not_configured' }[];
+}

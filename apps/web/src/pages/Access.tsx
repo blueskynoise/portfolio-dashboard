@@ -8,6 +8,7 @@ import { Ext } from '../lib/router';
 import { Beyond } from '../report/Beyond';
 import { DecisionBanner, Providers, Reasons, Rules, Stages } from '../report/Decision';
 import { FingerprintPanel } from '../report/Fingerprint';
+import { GatewayHealth } from '../report/GatewayHealth';
 import { PrivacyNotice } from '../report/Privacy';
 import { SignalGroups, summarise } from '../report/Signals';
 
@@ -48,19 +49,20 @@ export function Access() {
     window.location.assign('/');
   };
 
+  const established = report?.signals.filter((s) => s.kind !== 'gap').length ?? 0;
+  const answered = report?.providers.filter((p) => p.status === 'ok' || p.status === 'cache').length ?? 0;
+  const matched = report?.rules.filter((r) => r.outcome === 'matched').length ?? 0;
+  const unevaluable = report?.rules.filter((r) => r.outcome === 'not_evaluable').length ?? 0;
+
   return (
     <>
       <main id="main" tabIndex={-1} className="access">
         <header className="wrap program-hero enter">
           <p className="eyebrow">Live access evaluation · your visit only</p>
-          <h1 className="display">
-            What this site learned about <em className="mark">your</em> visit.
+          <h1 className="access-title">
+            What this site learned about <em className="mark">your</em> visit
           </h1>
-          <p className="lede">{report ? summarise(report.signals) : failed ? 'Your report could not be loaded.' : 'Loading your report…'}</p>
-          <p className="synthetic">
-            <b>Real data.</b> Unlike the case study, everything on this page was collected about this connection by the gateway you came through. Only
-            you can see it.
-          </p>
+          {!report && <p className="lede">{failed ? 'Your report could not be loaded.' : 'Loading your report…'}</p>}
         </header>
 
         {failed && (
@@ -73,11 +75,58 @@ export function Access() {
 
         {report && (
           <div className="wrap program-body">
-            <DecisionBanner report={report} />
+            {/* The conclusion first: what was decided, how much it is worth, and one sentence about the visit. */}
+            <DecisionBanner report={report}>
+              <p className="access-sentence">{summarise(report.signals)}</p>
+            </DecisionBanner>
+
+            <dl className="kpis access-kpis">
+              <div>
+                <dt>Signals established</dt>
+                <dd>
+                  {established}
+                  <small> of {report.signals.length}</small>
+                </dd>
+                <p>The rest are stated as unknown, not assumed clean.</p>
+              </div>
+              <div>
+                <dt>Providers that answered</dt>
+                <dd>
+                  {answered}
+                  <small> of {report.providers.length}</small>
+                </dd>
+                <p>Third-party lookups for this evaluation.</p>
+              </div>
+              <div>
+                <dt>Policy rules matched</dt>
+                <dd>
+                  {matched}
+                  <small> of {report.rules.length}</small>
+                </dd>
+                <p>{unevaluable > 0 ? `${unevaluable} could not be evaluated for lack of evidence.` : 'Every rule had the evidence it needed.'}</p>
+              </div>
+              <div>
+                <dt>Decided in</dt>
+                <dd>{report.totalMs} ms</dd>
+                <p>On the server, policy {report.policyVersion}.</p>
+              </div>
+            </dl>
+            <p className="synthetic">
+              <b>Real data.</b> Unlike the case study, everything on this page was collected about this connection by the gateway you came through. Only you
+              can see it.
+            </p>
 
             <section className="card">
-              <p className="eyebrow">Evidence</p>
-              <SignalGroups signals={report.signals} />
+              <p className="eyebrow">Why this decision</p>
+              <Reasons report={report} />
+            </section>
+
+            <section className="card">
+              <p className="eyebrow">The evidence, by how it was obtained</p>
+              <p className="muted" style={{ marginBottom: 14, fontSize: 14.5 }}>
+                Open a group, then any line in it, for its source, how it was collected and how it can be wrong.
+              </p>
+              <SignalGroups signals={report.signals} collapsible />
             </section>
 
             <section className="card">
@@ -85,39 +134,41 @@ export function Access() {
               <FingerprintPanel existing={report.fingerprint} config={config} />
             </section>
 
-            <section className="card two-up">
-              <div>
-                <p className="eyebrow">Why this decision</p>
-                <Reasons report={report} />
-              </div>
-              <div>
-                <p className="eyebrow">Server stages, as measured</p>
-                <Stages report={report} />
-              </div>
-            </section>
+            <div className="deeper" role="separator">
+              <span>How the decision was made</span>
+            </div>
 
-            <section className="card two-up">
-              <div>
-                <p className="eyebrow">Every rule in policy {report.policyVersion}</p>
-                <Rules report={report} />
+            <details className="card disclosure">
+              <summary>Every rule in policy {report.policyVersion}, and whether it matched</summary>
+              <Rules report={report} />
+            </details>
+
+            <details className="card disclosure">
+              <summary>What the server did: stages, providers and timings</summary>
+              <div className="two-up">
+                <div>
+                  <p className="eyebrow">Server stages, as measured</p>
+                  <Stages report={report} />
+                </div>
+                <div>
+                  <p className="eyebrow">Providers called</p>
+                  <Providers report={report} />
+                </div>
               </div>
-              <div>
-                <p className="eyebrow">Providers called for this evaluation</p>
-                <Providers report={report} />
-                <p className="eyebrow" style={{ margin: '24px 0 10px' }}>
-                  Limits of this evaluation
-                </p>
-                <ul className="limits">
-                  {report.limitations.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </section>
+            </details>
+
+            <details className="card disclosure">
+              <summary>Limits of this evaluation</summary>
+              <ul className="limits">
+                {report.limitations.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </details>
 
             {policy && (
-              <section className="card">
-                <p className="eyebrow">The policy, in full</p>
+              <details className="card disclosure">
+                <summary>The policy, in full</summary>
                 <h2 className="h3">{policy.summary}</h2>
                 <div className="two-up" style={{ marginTop: 18 }}>
                   <div>
@@ -163,11 +214,11 @@ export function Access() {
                     </tbody>
                   </table>
                 </div>
-              </section>
+              </details>
             )}
 
-            <section className="card">
-              <p className="eyebrow">How the gate works</p>
+            <details className="card disclosure">
+              <summary>How the gate works, step by step</summary>
               <ol className="pipeline">
                 {FLOW.map(([title, body]) => (
                   <li key={title}>
@@ -182,6 +233,11 @@ export function Access() {
                   Source on GitHub ↗
                 </Ext>
               </p>
+            </details>
+
+            <section className="card" id="health" tabIndex={-1}>
+              <p className="eyebrow">Gateway health · last 7 days · everyone, in aggregate</p>
+              <GatewayHealth />
             </section>
 
             <details className="card disclosure">

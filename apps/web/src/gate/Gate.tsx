@@ -12,10 +12,13 @@ import { obtainToken } from './turnstile';
 /**
  * The entrance.
  *
- * Every line of status on this screen is a real state of a real process:
- * reading the browser, waiting on the verification widget, waiting on our
- * server. Nothing is delayed for effect, and the timings shown for the
- * server's stages are the ones it measured.
+ * Who this is and what is behind the gate are on screen from the first
+ * frame, so nobody has to wait for the evaluation to find out where they
+ * are. When the evaluation finishes, the sentence about the visitor and
+ * the decision take over, with the way in directly beneath them.
+ *
+ * Every line of status is a real state of a real process. Nothing is
+ * delayed for effect, and the server timings shown are the ones it measured.
  */
 
 type StepState = 'pending' | 'active' | 'done' | 'skipped' | 'failed';
@@ -25,10 +28,7 @@ interface Step {
   detail?: string;
 }
 
-type Phase =
-  | { name: 'working' }
-  | { name: 'result'; response: AssessmentResponse }
-  | { name: 'unavailable'; detail: string };
+type Phase = { name: 'working' } | { name: 'result'; response: AssessmentResponse } | { name: 'unavailable'; detail: string };
 
 const INITIAL_STEPS: Step[] = [
   { label: 'Reading browser capabilities', state: 'pending' },
@@ -36,12 +36,19 @@ const INITIAL_STEPS: Step[] = [
   { label: 'Evaluating connection', state: 'pending' },
 ];
 
+/** What is behind the gate. Static copy: the gate bundle carries none of the portfolio's own content. */
+const INSIDE = [
+  { title: 'Your evaluation, in full', body: 'Every signal, where it came from, and the policy rule by rule.' },
+  { title: 'A security programme, investigated', body: 'An interactive case study: a vulnerability backlog that grew, and what the data says about why.' },
+  { title: 'Experience and projects', body: 'From GRC leadership to security automation engineering, and four things built outside work.' },
+];
+
 export function Gate() {
   const [config, setConfig] = useState<GateConfig | null>(null);
   const [steps, setSteps] = useState<Step[]>(INITIAL_STEPS);
   const [phase, setPhase] = useState<Phase>({ name: 'working' });
-  const [challenging, setChallenging] = useState(false);
   const widget = useRef<HTMLDivElement>(null);
+  const enter = useRef<HTMLAnchorElement>(null);
   const started = useRef(false);
 
   const setStep = (index: number, patch: Partial<Step>): void => setSteps((current) => current.map((step, i) => (i === index ? { ...step, ...patch } : step)));
@@ -77,7 +84,6 @@ export function Gate() {
     try {
       const response = await api.post<AssessmentResponse>('/api/assessments', { client, botToken });
       setStep(2, { state: 'done', detail: `${response.report.totalMs} ms on the server` });
-      setChallenging(response.report.decision === 'CHALLENGE');
       setPhase({ name: 'result', response });
     } catch (error) {
       setStep(2, { state: 'failed' });
@@ -101,6 +107,11 @@ export function Gate() {
   const report = phase.name === 'result' ? phase.response.report : null;
   const admitted = phase.name === 'result' && phase.response.admitted;
 
+  // Once admitted, the way in takes keyboard focus: Enter continues straight to the portfolio.
+  useEffect(() => {
+    if (admitted) enter.current?.focus({ preventScroll: true });
+  }, [admitted]);
+
   return (
     <div className="gate">
       <header className="gate-top wrap">
@@ -114,45 +125,68 @@ export function Gate() {
       </header>
 
       <main className="wrap gate-main" id="main">
-        {phase.name !== 'result' && (
+        {!report ? (
           <section className="gate-intro enter">
-            <p className="eyebrow">Before the portfolio</p>
-            <h1 className="display">Checking who’s at the door.</h1>
+            <p className="eyebrow">Mark Graziano · security engineering, data, automation</p>
+            <h1 className="display">I build the systems that turn security data into decisions.</h1>
             <p className="lede">
-              This site is fronted by a working access gateway. It is looking at your connection now, and in a moment it will show you
+              This portfolio sits behind a working access gateway that I built. It is evaluating your connection now, and in a moment it will show you
               everything it found.
             </p>
+          </section>
+        ) : (
+          <section className="gate-intro enter">
+            <p className="eyebrow">Mark Graziano’s portfolio · your visit, as a server sees it</p>
+            <h1 className="display">
+              You haven’t introduced yourself. <em className="mark">But your browser already has.</em>
+            </h1>
+            <p className="lede gate-sentence">{summarise(report.signals)}</p>
+            <p className="gate-sub">Nobody asked you for any of that. It arrived with the request, or was looked up from it, in {report.totalMs} ms.</p>
           </section>
         )}
 
         {report && (
-          <section className="gate-intro enter">
-            <p className="eyebrow">Your visit, as a server sees it</p>
-            <h1 className="display">
-              You haven’t introduced yourself. <em className="mark">But your browser already has.</em>
-            </h1>
-            <p className="lede">{summarise(report.signals)}</p>
-            <p className="gate-sub">
-              Nobody asked you for any of that. It arrived with the request, or was looked up from it, in {report.totalMs} ms. Open any line below to see where it came from and how far it can be trusted.
-            </p>
+          <DecisionBanner report={report}>
+            {admitted && (
+              <>
+                <a ref={enter} className="btn btn-primary btn-lg" href="/">
+                  Enter the portfolio <span className="arrow" aria-hidden="true">→</span>
+                </a>
+                <a className="btn btn-ghost" href="#evidence">
+                  Or see the evidence first
+                </a>
+              </>
+            )}
+            {report.decision === 'CHALLENGE' && (
+              <button type="button" className="btn btn-primary btn-lg" onClick={() => void evaluate(true)}>
+                Run the check
+              </button>
+            )}
+            {report.decision === 'DENY' && (
+              <a className="btn btn-ghost" href="mailto:hello@markgraziano.com">
+                Think this is wrong? Email me
+              </a>
+            )}
+          </DecisionBanner>
+        )}
+        {report?.decision === 'CHALLENGE' && <p className="gate-note">Cloudflare Turnstile will appear below. It usually resolves without a puzzle.</p>}
+        {report?.decision === 'DENY' && <p className="gate-note">Quote request {report.requestId.slice(0, 8)}. The limit lifts by itself in about ten minutes.</p>}
+
+        {/* While working, the steps are the main event. Afterwards they fold away behind the decision. */}
+        {report ? (
+          <details className="gate-steps-done">
+            <summary>
+              {steps.filter((s) => s.state === 'done').length} of {steps.length} checks completed · {report.totalMs} ms on the server
+            </summary>
+            <StepList steps={steps} />
+          </details>
+        ) : (
+          <section className="gate-progress" aria-live="polite" aria-label="Evaluation progress">
+            <StepList steps={steps} />
           </section>
         )}
-
-        <section className="gate-progress" aria-live="polite" aria-label="Evaluation progress">
-          <ol className="steps">
-            {steps.map((step) => (
-              <li key={step.label} className={`step-${step.state}`}>
-                <span className="step-mark" aria-hidden="true" />
-                <span>
-                  <b>{step.label}</b>
-                  {step.detail && <span className="step-detail">{step.detail}</span>}
-                </span>
-              </li>
-            ))}
-          </ol>
-          {/* Turnstile renders here. It stays empty unless Cloudflare needs the visitor to do something. */}
-          <div ref={widget} className="turnstile-slot" />
-        </section>
+        {/* Turnstile renders here. It stays empty unless Cloudflare needs the visitor to do something. */}
+        <div ref={widget} className="turnstile-slot" />
 
         {phase.name === 'unavailable' && (
           <section className="card gate-problem" role="alert">
@@ -170,36 +204,23 @@ export function Gate() {
           </section>
         )}
 
+        <section className="inside" aria-labelledby="inside-title">
+          <h2 className="eyebrow" id="inside-title">
+            {admitted ? 'What you are about to see' : 'Behind the gate'}
+          </h2>
+          <ol>
+            {INSIDE.map((item) => (
+              <li key={item.title}>
+                <b>{item.title}</b>
+                <span>{item.body}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
         {report && (
           <>
-            <DecisionBanner report={report} />
-
-            {admitted && (
-              <div className="gate-enter">
-                <a className="btn btn-primary btn-lg" href="/">
-                  Enter the portfolio <span className="arrow" aria-hidden="true">→</span>
-                </a>
-                <span>The server has issued a session. The portfolio is not delivered to any request without one.</span>
-              </div>
-            )}
-            {challenging && (
-              <div className="gate-enter">
-                <button type="button" className="btn btn-primary btn-lg" onClick={() => void evaluate(true)}>
-                  Run the check
-                </button>
-                <span>Cloudflare Turnstile will appear above. It usually resolves without a puzzle.</span>
-              </div>
-            )}
-            {report.decision === 'DENY' && (
-              <div className="gate-enter">
-                <a className="btn btn-ghost" href="mailto:hello@markgraziano.com">
-                  Think this is wrong? Email me
-                </a>
-                <span>Quote request {report.requestId.slice(0, 8)}. The limit lifts by itself in about ten minutes.</span>
-              </div>
-            )}
-
-            <section className="card">
+            <section className="card" id="evidence" tabIndex={-1}>
               <p className="eyebrow">What you sent, without being asked</p>
               <SignalGroups signals={report.signals} only={['connection', 'enrichment']} />
             </section>
@@ -211,10 +232,10 @@ export function Gate() {
               </section>
             )}
 
-            <section className="card">
-              <p className="eyebrow">The rest of the evidence</p>
+            <details className="card disclosure">
+              <summary>The rest of the evidence: what the page script reported, what was worked out, and what cannot be known</summary>
               <SignalGroups signals={report.signals} only={['script', 'derived', 'none']} />
-            </section>
+            </details>
 
             <section className="card two-up">
               <div>
@@ -234,16 +255,32 @@ export function Gate() {
           </>
         )}
 
-        <details className="card disclosure" open={phase.name === 'working' ? undefined : false}>
+        <details className="card disclosure">
           <summary>Privacy: what is collected, why, and for how long</summary>
           <PrivacyNotice config={config} />
         </details>
 
         <p className="gate-foot">
-          This is a public portfolio. Nothing confidential sits behind this gate; it exists to show how such a system is built, and it is
-          enforced by the server all the same. Assessment <span className="mono">{report?.id ?? 'pending'}</span>
+          This is a public portfolio. Nothing confidential sits behind this gate; it exists to show how such a system is built, and it is enforced by the
+          server all the same. Assessment <span className="mono">{report?.id ?? 'pending'}</span>
         </p>
       </main>
     </div>
+  );
+}
+
+function StepList({ steps }: { steps: Step[] }) {
+  return (
+    <ol className="steps">
+      {steps.map((step) => (
+        <li key={step.label} className={`step-${step.state}`}>
+          <span className="step-mark" aria-hidden="true" />
+          <span>
+            <b>{step.label}</b>
+            {step.detail && <span className="step-detail">{step.detail}</span>}
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }

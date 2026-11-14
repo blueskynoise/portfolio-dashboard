@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
   AUTOMATION_DAY,
   analyse,
@@ -19,6 +19,7 @@ import {
   type Ownership,
   type SeverityFilter,
   type Statement,
+  type Story,
   type View,
 } from '@portfolio/analytics';
 import { Contact } from '../components/Chrome';
@@ -436,6 +437,36 @@ carries a review date`}</pre>
 
 // ── The page ──────────────────────────────────────────────────────────
 
+const VERDICT_LABEL: Record<Story['verdict'], string> = {
+  scope_expansion: 'Scope expansion',
+  deteriorating: 'Deteriorating',
+  improving: 'Improving',
+  mixed: 'Mixed picture',
+  no_baseline: 'No baseline yet',
+  too_few: 'Too few to judge',
+};
+const signed = (value: number | null): string => (value === null ? 'n/a' : `${value >= 0 ? '+' : '−'}${Math.abs(Math.round(value * 100))}%`);
+
+/** One numbered question: the heading sits outside the cards so the four read as chapters, not as more boxes. */
+function Question({ id, number, question, answer, children }: { id: string; number: string; question: string; answer: string; children: ReactNode }) {
+  return (
+    <section className="q" id={id} aria-labelledby={`${id}-title`} tabIndex={-1}>
+      <header className="q-head">
+        <span className="q-number" aria-hidden="true">
+          {number}
+        </span>
+        <div>
+          <p className="q-question">{question}</p>
+          <h2 className="q-answer" id={`${id}-title`}>
+            {answer}
+          </h2>
+        </div>
+      </header>
+      <div className="q-body">{children}</div>
+    </section>
+  );
+}
+
 export function Program() {
   useDocumentTitle(`Is the programme getting worse? — ${profile.name}`);
   const model = useMemo(() => buildModel(generateSources()), []);
@@ -453,6 +484,7 @@ export function Program() {
   const filtered = JSON.stringify(view) !== JSON.stringify(DEFAULT_VIEW);
   const overdueTotal = analysis.overSla.count;
   const quarterWeek = CURRENT.from / 7;
+  const { current } = analysis;
 
   return (
     <>
@@ -461,20 +493,17 @@ export function Program() {
           <p className="eyebrow">Security programme intelligence · interactive case study</p>
           <h1 className="display">
             “Our critical vulnerability backlog grew {Math.round((headline.backlogChange ?? 0) * 100)}% this quarter.{' '}
-            <em className="mark">Is the programme getting worse?</em>”
+            <em className="mark">Is the programme getting worse?”</em>
           </h1>
-          <p className="lede">
-            It is the question a security leader gets asked, usually with a chart attached. The honest answer is in the data underneath the chart.
-            Change the view and every figure, chart and sentence on this page is recomputed.
-          </p>
+          <p className="lede">The answer is in the data under the chart. Change the view and every figure, chart and sentence below is recomputed.</p>
           <p className="synthetic">
-            <b>Synthetic data.</b> This company does not exist. No record here comes from any employer, and none of it is the live data this
-            site collects about its own visitors.
+            <b>Synthetic data.</b> This company does not exist. No record here comes from any employer, and none of it is the live data this site collects
+            about its own visitors.
           </p>
         </header>
 
-        <div className="wrap program-body">
-          <section className="card filters" aria-label="Change the view">
+        <div className="wrap">
+          <section className="filters" aria-label="Change the view">
             <div className="filter">
               <span>Severity</span>
               <div className="seg" role="radiogroup" aria-label="Severity">
@@ -505,8 +534,54 @@ export function Program() {
               </button>
             )}
           </section>
+        </div>
 
-          <section className={`verdict verdict-${story.verdict}`} aria-live="polite">
+        {/* Stays in view while scrolling: whatever the filters say, the verdict and the numbers behind it are one glance away. */}
+        <div className="scorecard-dock">
+          <section className={`wrap scorecard scorecard-${story.verdict}`} aria-label="Summary of the current view" aria-live="polite">
+            <div className="score-verdict">
+              <span>Reading</span>
+              <b>{VERDICT_LABEL[story.verdict]}</b>
+            </div>
+            <dl>
+              <div>
+                <dt>Backlog</dt>
+                <dd>
+                  {n(current.start)} → {n(current.end)}
+                  {current.start > 0 && <small>{signed(analysis.backlogChange)}</small>}
+                </dd>
+              </div>
+              <div>
+                <dt>Scanned all along</dt>
+                <dd>{view.cohort === 'new' ? 'n/a' : signed(analysis.stable.backlogChange)}</dd>
+              </div>
+              <div>
+                <dt>Overdue</dt>
+                <dd>
+                  {n(overdueTotal)}
+                  <small>of {n(analysis.overSla.open)}</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Assigned in 7 days</dt>
+                <dd>{pct(analysis.assignment.current.withinWeekRate)}</dd>
+              </div>
+              <div>
+                <dt>Confidence</dt>
+                <dd className={story.confidence.level === 'reduced' ? 'is-reduced' : ''}>{story.confidence.level}</dd>
+              </div>
+            </dl>
+            <nav aria-label="Jump to a question">
+              <a href="#what">What</a>
+              <a href="#why">Why</a>
+              <a href="#do">Do</a>
+              <a href="#measure">Measure</a>
+            </nav>
+          </section>
+        </div>
+
+        <div className="wrap program-body">
+          <section className={`verdict verdict-${story.verdict}`}>
             <div>
               <p className="eyebrow">Reading of this view · {n(analysis.matched)} findings</p>
               <h2>{story.headline}</h2>
@@ -518,27 +593,28 @@ export function Program() {
             </p>
           </section>
 
-          <section className="card" aria-labelledby="q1">
-            <p className="eyebrow">1 · What is happening?</p>
-            <h2 className="h2" id="q1">
-              {analysis.current.start === 0 ? `${n(analysis.current.end)} open, all of them newly visible` : `${n(analysis.current.start)} → ${n(analysis.current.end)} open`}
-            </h2>
-            <BacklogChart series={analysis.series} quarterWeek={quarterWeek} />
-            <div className="two-up">
-              <div>
-                <h3 className="h3">Where this quarter’s change came from</h3>
-                <FlowBreakdown flow={analysis.current} />
-              </div>
-              <Statements items={story.whatIsHappening} />
+          <Question
+            id="what"
+            number="01"
+            question="What is happening?"
+            answer={current.start === 0 ? `${n(current.end)} open, all of them newly visible` : `${n(current.start)} → ${n(current.end)} open (${signed(analysis.backlogChange)})`}
+          >
+            <div className="card">
+              <BacklogChart series={analysis.series} quarterWeek={quarterWeek} />
             </div>
-          </section>
+            <div className="two-up">
+              <div className="card">
+                <h3 className="h3">Where this quarter’s change came from</h3>
+                <FlowBreakdown flow={current} />
+              </div>
+              <div className="plain">
+                <Statements items={story.whatIsHappening} />
+              </div>
+            </div>
+          </Question>
 
-          <section className="card" aria-labelledby="q2">
-            <p className="eyebrow">2 · Why is it happening?</p>
-            <h2 className="h2" id="q2">
-              Effort, exposure and data quality are three different things
-            </h2>
-            <div className="kpis">
+          <Question id="why" number="02" question="Why is it happening?" answer="Effort, exposure and data quality are three different things">
+            <dl className="kpis">
               <div>
                 <dt>Fixes per week</dt>
                 <dd>{analysis.throughput.current.toFixed(1)}</dd>
@@ -548,7 +624,8 @@ export function Program() {
                 <dt>Assigned within 7 days</dt>
                 <dd>{pct(analysis.assignment.current.withinWeekRate)}</dd>
                 <p>
-                  {n(analysis.assignment.current.assignedWithinWeek)} of {n(analysis.assignment.current.eligible)}; was {pct(analysis.assignment.previous.withinWeekRate)}. {n(analysis.assignment.current.unassigned)} never assigned.
+                  {n(analysis.assignment.current.assignedWithinWeek)} of {n(analysis.assignment.current.eligible)}; was {pct(analysis.assignment.previous.withinWeekRate)}.{' '}
+                  {n(analysis.assignment.current.unassigned)} never assigned.
                 </p>
               </div>
               <div>
@@ -570,10 +647,10 @@ export function Program() {
                   {n(coverage.verified)} of {n(coverage.assets)}, whole estate. Data quality.
                 </p>
               </div>
-            </div>
+            </dl>
 
-            <div className="two-up" style={{ marginTop: 28 }}>
-              <div>
+            <div className="two-up">
+              <div className="card">
                 <h3 className="h3">Detected against fixed, per week</h3>
                 <ArrivalsChart series={analysis.series} quarterWeek={quarterWeek} />
                 <h3 className="h3" style={{ marginTop: 20 }}>
@@ -591,105 +668,105 @@ export function Program() {
                   ))}
                 </ul>
               </div>
-              <Statements items={story.whyIsItHappening} />
+              <div className="plain">
+                <Statements items={story.whyIsItHappening} />
+              </div>
             </div>
 
-            <h3 className="h3" style={{ margin: '32px 0 10px' }}>
-              By ownership state
-            </h3>
-            <div className="table-scroll">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th scope="col">Ownership</th>
-                    <th scope="col" className="num">Open</th>
-                    <th scope="col" className="num">Share of open</th>
-                    <th scope="col" className="num">Overdue</th>
-                    <th scope="col" className="num">Overdue rate</th>
-                    <th scope="col" className="num">Median age</th>
-                    <th scope="col" className="num">Never assigned</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {analysis.ownership.map((row) => (
-                    <tr key={row.ownership}>
-                      <th scope="row" title={OWNERSHIP_HELP[row.ownership]}>
-                        <button type="button" className="link-btn" onClick={() => set({ ownership: row.ownership })}>
-                          {OWNERSHIP_LABEL[row.ownership]}
-                        </button>
-                      </th>
-                      <td className="num">{n(row.open)}</td>
-                      <td className="num">{pct(row.openShare)}</td>
-                      <td className="num">{n(row.overSla)}</td>
-                      <td className="num">{pct(row.overSlaRate)}</td>
-                      <td className="num">{days(row.medianAgeDays)}</td>
-                      <td className="num">{n(row.unassigned)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <h3 className="h3" style={{ margin: '28px 0 10px' }}>
-              By team
-            </h3>
-            <div className="table-scroll">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th scope="col">Team</th>
-                    <th scope="col" className="num">Open</th>
-                    <th scope="col" className="num">Overdue</th>
-                    <th scope="col" className="num">Overdue rate</th>
-                    <th scope="col" className="num">Median age</th>
-                    <th scope="col" className="num">Fixed this quarter</th>
-                    <th scope="col" className="num">Tickets re-routed</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {analysis.teams.map((row) => (
-                    <tr key={row.team}>
-                      <th scope="row">
-                        <button type="button" className="link-btn" onClick={() => set({ team: row.team })}>
-                          {row.team}
-                        </button>
-                      </th>
-                      <td className="num">{n(row.open)}</td>
-                      <td className="num">{n(row.overSla)}</td>
-                      <td className="num">{pct(row.overSlaRate)}</td>
-                      <td className="num">{days(row.medianAgeDays)}</td>
-                      <td className="num">{n(row.remediated)}</td>
-                      <td className="num">{pct(row.reassignedRate)}</td>
-                    </tr>
-                  ))}
-                  {analysis.teams.length === 0 && (
+            <details className="card disclosure" open>
+              <summary>By ownership state</summary>
+              <div className="table-scroll">
+                <table className="data">
+                  <thead>
                     <tr>
-                      <td colSpan={7} className="muted">
-                        No finding in this view has reached a team.
-                      </td>
+                      <th scope="col">Ownership</th>
+                      <th scope="col" className="num">Open</th>
+                      <th scope="col" className="num">Share of open</th>
+                      <th scope="col" className="num">Overdue</th>
+                      <th scope="col" className="num">Overdue rate</th>
+                      <th scope="col" className="num">Median age</th>
+                      <th scope="col" className="num">Never assigned</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <p className="muted" style={{ fontSize: 14, marginTop: 8 }}>
-              Findings that never reached a team are in no row of this table. They are the “never assigned” column above.
-            </p>
-          </section>
+                  </thead>
+                  <tbody>
+                    {analysis.ownership.map((row) => (
+                      <tr key={row.ownership}>
+                        <th scope="row" title={OWNERSHIP_HELP[row.ownership]}>
+                          <button type="button" className="link-btn" onClick={() => set({ ownership: row.ownership })}>
+                            {OWNERSHIP_LABEL[row.ownership]}
+                          </button>
+                        </th>
+                        <td className="num">{n(row.open)}</td>
+                        <td className="num">{pct(row.openShare)}</td>
+                        <td className="num">{n(row.overSla)}</td>
+                        <td className="num">{pct(row.overSlaRate)}</td>
+                        <td className="num">{days(row.medianAgeDays)}</td>
+                        <td className="num">{n(row.unassigned)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
 
-          <section className="card" aria-labelledby="q3">
-            <p className="eyebrow">3 · What should we do?</p>
+            <details className="card disclosure">
+              <summary>By team</summary>
+              <div className="table-scroll">
+                <table className="data">
+                  <thead>
+                    <tr>
+                      <th scope="col">Team</th>
+                      <th scope="col" className="num">Open</th>
+                      <th scope="col" className="num">Overdue</th>
+                      <th scope="col" className="num">Overdue rate</th>
+                      <th scope="col" className="num">Median age</th>
+                      <th scope="col" className="num">Fixed this quarter</th>
+                      <th scope="col" className="num">Tickets re-routed</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {analysis.teams.map((row) => (
+                      <tr key={row.team}>
+                        <th scope="row">
+                          <button type="button" className="link-btn" onClick={() => set({ team: row.team })}>
+                            {row.team}
+                          </button>
+                        </th>
+                        <td className="num">{n(row.open)}</td>
+                        <td className="num">{n(row.overSla)}</td>
+                        <td className="num">{pct(row.overSlaRate)}</td>
+                        <td className="num">{days(row.medianAgeDays)}</td>
+                        <td className="num">{n(row.remediated)}</td>
+                        <td className="num">{pct(row.reassignedRate)}</td>
+                      </tr>
+                    ))}
+                    {analysis.teams.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="muted">
+                          No finding in this view has reached a team.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <p className="muted" style={{ fontSize: 14, marginTop: 8 }}>
+                Findings that never reached a team are in no row of this table. They are the “never assigned” column under ownership.
+              </p>
+            </details>
+          </Question>
+
+          <Question id="do" number="03" question="What should we do?" answer={story.whatShouldWeDo ? 'One recommendation, and what to leave alone' : 'Nothing, on this evidence'}>
             {story.whatShouldWeDo ? (
               <>
-                <h2 className="h2" id="q3">
-                  {story.whatShouldWeDo.action}
-                </h2>
-                <p className="lede">{story.whatShouldWeDo.rationale}</p>
+                <div className="reco">
+                  <p className="eyebrow">Recommendation</p>
+                  <h3>{story.whatShouldWeDo.action}</h3>
+                  <p>{story.whatShouldWeDo.rationale}</p>
+                </div>
                 {story.whatShouldWeDo.keep.length > 0 && (
-                  <>
-                    <h3 className="h3" style={{ margin: '24px 0 8px' }}>
-                      And what to leave alone
-                    </h3>
+                  <div className="card">
+                    <h3 className="h3">Leave these alone</h3>
                     <ul className="keep">
                       {story.whatShouldWeDo.keep.map((item) => (
                         <li key={item}>{item}</li>
@@ -698,44 +775,33 @@ export function Program() {
                     <p className="muted" style={{ fontSize: 14 }}>
                       Automated routing went live on {date(AUTOMATION_DAY)}, part-way through the previous quarter, which is why the two can be compared.
                     </p>
-                  </>
+                  </div>
                 )}
               </>
             ) : (
-              <h2 className="h2" id="q3">
-                Nothing, on this evidence. The view is too narrow to act on.
-              </h2>
+              <p className="card">The view is too narrow to act on. Widen the filters.</p>
             )}
-          </section>
+          </Question>
 
           {story.howWillWeKnow.length > 0 && (
-            <section className="card" aria-labelledby="q4">
-              <p className="eyebrow">4 · How will we know it worked?</p>
-              <h2 className="h2" id="q4">
-                Decide the measurements before the work starts
-              </h2>
-              <div className="table-scroll">
-                <table className="data measures">
-                  <thead>
-                    <tr>
-                      <th scope="col">Measure</th>
-                      <th scope="col">Today</th>
-                      <th scope="col">What to watch for</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {story.howWillWeKnow.map((m) => (
-                      <tr key={m.metric}>
-                        <th scope="row">{m.metric}</th>
-                        <td className="mono">{m.baseline}</td>
-                        <td>{m.watchFor}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
+            <Question id="measure" number="04" question="How will we know it worked?" answer="Decide the measurements before the work starts">
+              <ol className="measures">
+                {story.howWillWeKnow.map((m) => (
+                  <li key={m.metric}>
+                    <div>
+                      <span>{m.metric}</span>
+                      <b>{m.baseline}</b>
+                    </div>
+                    <p>{m.watchFor}</p>
+                  </li>
+                ))}
+              </ol>
+            </Question>
           )}
+
+          <div className="deeper" role="separator">
+            <span>Go deeper</span>
+          </div>
 
           <section className="card" aria-labelledby="oldest">
             <p className="eyebrow">Evidence</p>
@@ -772,7 +838,9 @@ export function Program() {
                         <td className="num">{days(ageAt(f, END_DAY))}</td>
                         <td>{OWNERSHIP_LABEL[f.ownership]}</td>
                         <td>{f.assignedDay !== null ? f.team : <span className="muted">unassigned</span>}</td>
-                        <td>{f.sources.length} scanner{f.sources.length === 1 ? '' : 's'}</td>
+                        <td>
+                          {f.sources.length} scanner{f.sources.length === 1 ? '' : 's'}
+                        </td>
                       </tr>,
                       open && (
                         <tr key={`${f.key}-detail`} className="detail-row">

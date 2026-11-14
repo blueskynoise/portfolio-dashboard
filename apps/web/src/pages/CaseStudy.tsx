@@ -87,9 +87,9 @@ export function CaseStudy({ project }: { project: Project }) {
               <p className="eyebrow">Decisions</p>
               <h2 className="h2">{project.kind === 'podcast' ? 'What the show commits to' : 'What the design commits to'}</h2>
             </div>
-            <ol className="decisions">
+            <ol className="choices">
               {project.decisions.map((d, i) => (
-                <li className="decision" key={d.title}>
+                <li className="choice" key={d.title}>
                   <span className="n" aria-hidden="true">
                     0{i + 1}
                   </span>

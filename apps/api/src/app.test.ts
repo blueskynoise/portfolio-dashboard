@@ -467,6 +467,45 @@ describe('retention', () => {
   });
 });
 
+describe('public gateway health', () => {
+  const health = async () => (await get('/api/gateway/health')).json();
+
+  it('publishes nothing about outcomes until there are enough evaluations to hide an individual in', async () => {
+    h = await harness();
+    await assess(h);
+    await assess(h, { ip: '203.0.113.60' });
+    const summary = await health();
+    expect(summary).toMatchObject({ sufficient: false, evaluations: null, decisions: null, standardAssurance: null, latency: null, minimumToPublish: 10 });
+    // Provider state describes the service, not a visitor, so it is always shown.
+    expect(summary.providers).toContainEqual({ name: 'turnstile', state: 'healthy' });
+  });
+
+  it('publishes rounded aggregates and no per-visitor detail once there are', async () => {
+    h = await harness({ configured: { abuse: false } });
+    h.world.turnstile = () => json({ success: false, 'error-codes': ['invalid-input-response'] });
+    await assess(h, { ip: '203.0.113.90' });
+    h.world.turnstile = () => json({ success: true, action: 'gate' });
+    for (let i = 0; i < 13; i++) await assess(h, { ip: `203.0.113.${100 + i}` });
+    const summary = await health();
+    expect(summary).toMatchObject({ sufficient: true, evaluations: 10, failuresCountedAsPasses: 0 });
+    expect(summary.decisions).toEqual({ allow: 93, challenge: 7, deny: 0 });
+    expect(summary.providers).toContainEqual({ name: 'abuseipdb', state: 'not_configured' });
+    const text = JSON.stringify(summary);
+    for (const leak of ['203.0.113', 'Example Broadband', 'AS64500', 'Chrome', 'Columbus']) expect(text).not.toContain(leak);
+    expect(Object.keys(summary).sort()).toEqual(['decisions', 'evaluations', 'failuresCountedAsPasses', 'generatedAt', 'latency', 'minimumToPublish', 'policyVersion', 'providers', 'standardAssurance', 'sufficient', 'windowDays']);
+  });
+
+  it('needs no session and is cached', async () => {
+    h = await harness();
+    const first = await get('/api/gateway/health');
+    expect(first.statusCode).toBe(200);
+    for (let i = 0; i < 12; i++) await assess(h, { ip: `203.0.113.${100 + i}` });
+    expect((await health()).sufficient).toBe(false);
+    h.clock.now += 61_000;
+    expect((await health()).sufficient).toBe(true);
+  });
+});
+
 describe('published configuration', () => {
   it('tells the gate which providers are real on this deployment', async () => {
     h = await harness({ configured: { abuse: false } });

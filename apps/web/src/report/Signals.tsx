@@ -77,12 +77,35 @@ function Row({ signal }: { signal: Signal }) {
   );
 }
 
-export function SignalGroups({ signals, only }: { signals: Signal[]; only?: CollectionMethod[] }) {
+/**
+ * `collapsible` renders each group closed, with a one-line count of what was established and what was not,
+ * so a page can lead with the conclusion and leave the evidence one click away.
+ */
+export function SignalGroups({ signals, only, collapsible = false }: { signals: Signal[]; only?: CollectionMethod[]; collapsible?: boolean }) {
   return (
     <div className="sig-groups">
       {GROUPS.filter((g) => !only || only.includes(g.method)).map((group) => {
         const items = signals.filter((s) => s.method === group.method);
         if (items.length === 0) return null;
+        if (collapsible) {
+          const known = items.filter((s) => s.kind !== 'gap').length;
+          return (
+            <details key={group.method} className="sig-group sig-fold">
+              <summary>
+                <span className="sig-fold-title">{group.title}</span>
+                <span className="sig-fold-count">
+                  {group.method === 'none' ? `${items.length} stated limits` : `${known} established${items.length - known > 0 ? `, ${items.length - known} unknown` : ''}`}
+                </span>
+              </summary>
+              <p className="sig-fold-blurb">{group.blurb}</p>
+              <ul>
+                {items.map((s) => (
+                  <Row key={s.key} signal={s} />
+                ))}
+              </ul>
+            </details>
+          );
+        }
         return (
           <section key={group.method} className="sig-group">
             <header>

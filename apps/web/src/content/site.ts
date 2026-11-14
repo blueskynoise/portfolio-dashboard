@@ -15,26 +15,41 @@ export const profile = {
   name: 'Mark Graziano',
   headline: 'I build the systems that turn security data into decisions.',
   intro:
-    'I work where security engineering, data analytics and automation meet: connecting fragmented systems, making security programmes measurable, and building the workflows that let an organisation act on what the data shows.',
+    'I connect fragmented security systems, make programmes measurable, and build the automation that lets an organisation act on what the data shows.',
   email: 'hello@markgraziano.com',
   github: 'https://github.com/blueskynoise',
 };
 
-export const capabilities = [
+/**
+ * Facts a reader can check, and nothing else: the career path as the owner describes it, the tools he names,
+ * the projects linked below, and this site's own source. No employers, dates or figures.
+ */
+export const credentials = [
+  { label: 'Background', value: 'GRC leadership, then a dedicated security automation engineering role' },
+  { label: 'Builds with', value: 'CloudQuery · dbt · Athena · Superset · Tines · Jira' },
+  { label: 'Independent work', value: 'Three software products and a podcast' },
+  { label: 'This site', value: 'A working access gateway. Open source, with tests.' },
+];
+
+/** How the site itself demonstrates each capability. One line each. */
+export const proof = [
   {
-    title: 'Security engineering',
-    body: 'Integrations, automation and operational workflows that keep working when an API rate-limits, a token expires or a scanner returns nothing.',
-    proof: { label: 'You came in through one', to: '/access' },
+    capability: 'Security engineering',
+    title: 'Policy as code',
+    body: 'The gate you came through is a versioned, pure function. It returns reason codes. There is no risk score.',
+    link: { label: 'Read the policy', to: '/access' },
   },
   {
-    title: 'Security data intelligence',
-    body: 'Turning scattered findings, tickets and ownership records into an honest picture of a programme: what changed, why, and whether the fix worked.',
-    proof: { label: 'Work through a case', to: '/program' },
+    capability: 'Security data intelligence',
+    title: 'Provenance on everything',
+    body: 'Every signal and every sentence says how it was obtained and how far it can be trusted.',
+    link: { label: 'See it in the case study', to: '/program' },
   },
   {
-    title: 'Product engineering',
-    body: 'Software people choose to use. Internal tools deserve the same care as consumer products, and I build both.',
-    proof: { label: 'See the projects', to: '/#projects' },
+    capability: 'Product engineering',
+    title: 'Privacy by design',
+    body: 'Addresses stored truncated, fingerprinting opt-in and deletable, records removed on a schedule.',
+    link: { label: 'What was collected', to: '/access' },
   },
 ];
 

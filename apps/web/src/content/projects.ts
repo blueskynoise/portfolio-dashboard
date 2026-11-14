@@ -29,6 +29,8 @@ export interface Project {
   facets: string[];
   /** Whether the detail page has an interactive sketch. */
   hasPreview: boolean;
+  /** The habit it shares with the security work, in a few words. Only where the source supports it. */
+  theme: string;
   url: string;
   linkLabel: string;
   logo: string;
@@ -50,6 +52,7 @@ export const projects: Project[] = [
     kind: 'software',
     facets: ['Consumer product', 'Shared storytime and play', 'Real-time interaction', 'Independent product'],
     hasPreview: true,
+    theme: 'One control, nothing to get wrong',
     name: 'Bivvi',
     tag: 'Family connection',
     url: 'https://bivvi.app',
@@ -103,6 +106,7 @@ export const projects: Project[] = [
     kind: 'software',
     facets: ['Browser-based application', 'Radio hardware from the browser', 'Usability'],
     hasPreview: true,
+    theme: 'Defaults instead of decisions',
     name: 'TxR Studio',
     tag: 'Radio programming',
     url: 'https://txrstudio.com',
@@ -156,6 +160,7 @@ export const projects: Project[] = [
     kind: 'software',
     facets: ['Meeting intelligence', 'Sales workflow', 'Review-then-act design'],
     hasPreview: true,
+    theme: 'Review, then act',
     name: 'Summa',
     tag: 'Sales enablement',
     url: 'https://summahq.com',
@@ -209,6 +214,7 @@ export const projects: Project[] = [
     kind: 'podcast',
     facets: ['Security industry podcast', 'Interviews with practitioners', 'Knowledge sharing'],
     hasPreview: false,
+    theme: 'Controls explained by their intent',
     name: 'The GRC Podcast',
     tag: 'Industry podcast',
     url: 'https://open.spotify.com/show/4vD7XV8vP323P7raPjtAq0',

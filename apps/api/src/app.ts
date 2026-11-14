@@ -2,10 +2,10 @@ import { randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import cookie from '@fastify/cookie';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
-import type { AdminAssessmentRow, AssessmentReport, AssessmentRequest, AssessmentResponse, FingerprintReport, GateConfig } from '@portfolio/contracts';
+import type { AdminAssessmentRow, AssessmentReport, AssessmentRequest, AssessmentResponse, FingerprintReport, GateConfig, PublicHealth } from '@portfolio/contracts';
 import { POLICY_DOCUMENT, POLICY_VERSION, THRESHOLDS } from '@portfolio/policy';
 import { verifyPassword } from './admin/auth';
-import { computeOverview } from './admin/metrics';
+import { computeOverview, publicHealth } from './admin/metrics';
 import { runAssessment, type Providers } from './assess';
 import { hmacIp, isPublicIp, resolveClientIp } from './clientIp';
 import type { Config } from './config';
@@ -217,6 +217,26 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   }));
 
   app.get('/api/policy', async () => POLICY_DOCUMENT);
+
+  // Aggregate-only gateway health. Public, cached for a minute, and silent about outcomes until there is enough
+  // traffic that a figure cannot describe an individual.
+  let healthCache: { at: number; value: PublicHealth } | null = null;
+  app.get('/api/gateway/health', async (): Promise<PublicHealth> => {
+    if (healthCache && now() - healthCache.at < 60_000) return healthCache.value;
+    const windowDays = 7;
+    const since = new Date(now() - windowDays * 86_400_000);
+    const [assessments, calls] = await Promise.all([store.listAssessmentsSince(since), store.listProviderCallsSince(since)]);
+    const overview = computeOverview({ assessments, calls, events: [], investigations: [], fingerprints: [], now: new Date(now()), windowDays });
+    const value = publicHealth(overview, POLICY_VERSION, {
+      turnstile: providers.turnstile.configured,
+      'ipapi.is': providers.ipapi.configured,
+      ipinfo: providers.ipinfo.configured,
+      abuseipdb: providers.abuse.configured,
+      torproject: true,
+    });
+    healthCache = { at: now(), value };
+    return value;
+  });
 
   app.post('/api/assessments', async (req, reply): Promise<AssessmentResponse | FastifyReply> => {
     const body = (req.body && typeof req.body === 'object' ? req.body : {}) as AssessmentRequest;

@@ -833,20 +833,20 @@ button:hover > .arrow {
 @media (max-width: 760px) {
   .case-split { grid-template-columns: 1fr; }
 }
-.decisions {
+.choices {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
-.decision {
+.choice {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 24px;
 }
-.decision .n { font-family: var(--font-mono); font-size: 12px; color: var(--tone); }
-.decision h3 { margin: 10px 0 8px; }
-.decision p { color: var(--ink-2); font-size: 15px; }
+.choice .n { font-family: var(--font-mono); font-size: 12px; color: var(--tone); }
+.choice h3 { margin: 10px 0 8px; }
+.choice p { color: var(--ink-2); font-size: 15px; }
 .flow {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -875,7 +875,7 @@ button:hover > .arrow {
   font-size: 13px;
 }
 @media (max-width: 820px) {
-  .decisions, .flow { grid-template-columns: 1fr; }
+  .choices, .flow { grid-template-columns: 1fr; }
   .flow li:not(:last-child)::after { content: '↓'; right: auto; left: 22px; top: auto; bottom: -15px; transform: none; }
 }
 .preview-frame {

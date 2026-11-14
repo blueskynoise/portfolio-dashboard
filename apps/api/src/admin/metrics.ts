@@ -1,4 +1,4 @@
-import type { AdminOverview, Distribution, HealthFinding, LatencySummary, ProviderHealth, SignalStatus } from '@portfolio/contracts';
+import type { AdminOverview, Distribution, HealthFinding, LatencySummary, ProviderHealth, PublicHealth, SignalStatus } from '@portfolio/contracts';
 import { TOR_STALE_AFTER_SECONDS } from '../providers/tor';
 import type { AssessmentRecord, EventRecord, FingerprintRecord, InvestigationRecord, ProviderCallRecord } from '../store/types';
 
@@ -207,4 +207,42 @@ export function deriveFindings(o: AdminOverview): HealthFinding[] {
     findings.push({ severity: 'ok', title: 'Nothing needs attention', detail: 'Providers are answering, signals are arriving and no decision was made on missing evidence without being marked as such.' });
   }
   return findings;
+}
+
+export const PUBLIC_MIN_EVALUATIONS = 10;
+
+/**
+ * Reduce the private overview to what is safe to publish.
+ *
+ * Provider state says nothing about any visitor, so it is always included.
+ * Everything derived from evaluations is withheld below the minimum.
+ */
+export function publicHealth(overview: AdminOverview, policyVersion: string, configured: Readonly<Record<string, boolean>>): PublicHealth {
+  const sufficient = overview.total >= PUBLIC_MIN_EVALUATIONS;
+  const share = (key: string, list: Distribution[]): number => Math.round(((list.find((d) => d.key === key)?.count ?? 0) / overview.total) * 100);
+  const byName = new Map(overview.providers.map((p) => [p.provider, p]));
+  return {
+    generatedAt: overview.generatedAt,
+    windowDays: overview.windowDays,
+    policyVersion,
+    sufficient,
+    minimumToPublish: PUBLIC_MIN_EVALUATIONS,
+    evaluations: sufficient ? Math.floor(overview.total / 10) * 10 : null,
+    decisions: sufficient ? { allow: share('ALLOW', overview.decisions), challenge: share('CHALLENGE', overview.decisions), deny: share('DENY', overview.decisions) } : null,
+    standardAssurance: sufficient ? share('standard', overview.assurance) : null,
+    latency: sufficient ? { p50: overview.latency.p50, p95: overview.latency.p95 } : null,
+    failuresCountedAsPasses: sufficient ? overview.misclassifiedFailures : null,
+    providers: Object.entries(configured).map(([name, isConfigured]) => {
+      const health = byName.get(name);
+      const state: PublicHealth['providers'][number]['state'] = !isConfigured
+        ? 'not_configured'
+        : !health || health.ok + health.cache + health.timeout + health.error === 0
+          ? 'no_live_calls'
+          : (health.failureRate ?? 0) > 0.05
+            ? 'degraded'
+            : // Answering from a fresh cache or a periodically refreshed list counts as working.
+              'healthy';
+      return { name, state };
+    }),
+  };
 }

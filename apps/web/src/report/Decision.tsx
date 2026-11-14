@@ -1,15 +1,18 @@
+import type { ReactNode } from 'react';
 import type { AssessmentReport } from '@portfolio/contracts';
 
 const TONE = { ALLOW: 'good', CHALLENGE: 'warn', DENY: 'bad' } as const;
 const TITLE = { ALLOW: 'Access granted', CHALLENGE: 'One more check', DENY: 'Access refused' } as const;
 
-export function DecisionBanner({ report }: { report: AssessmentReport }) {
+/** The decision, its assurance, and whatever the visitor can do next. `children` is the action area. */
+export function DecisionBanner({ report, children }: { report: AssessmentReport; children?: ReactNode }) {
   return (
-    <section className={`decision decision-${TONE[report.decision]}`} aria-labelledby="decision-title">
+    <section className={`verdict-banner verdict-banner-${TONE[report.decision]}`} aria-labelledby="decision-title">
       <div className="decision-main">
         <p className="eyebrow">Policy decision</p>
         <h2 id="decision-title">{TITLE[report.decision]}</h2>
         <p>{report.explanation}</p>
+        {children && <div className="decision-actions">{children}</div>}
       </div>
       <dl className="decision-facts">
         <div>
