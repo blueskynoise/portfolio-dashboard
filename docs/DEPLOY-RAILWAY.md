@@ -1,16 +1,27 @@
 # Deploying to Railway
 
-Nothing in this repository has been deployed. These steps are written from Railway's documentation and from running the
-production build locally; treat the first deploy as a test and work through the verification list at the end.
+These steps reflect an actual deployment of this repository to Railway. Work through the verification list at the end
+after any change to the proxy, domain or provider configuration.
 
 ## 1. Create the project
 
-1. New project from the GitHub repository. Railway reads `railway.json`:
-   - build: `npm run build` (type-check, web build, API bundle)
-   - pre-deploy: `npm run db:migrate`
-   - start: `npm start`
-   - health check: `/readyz` (fails while the database is unreachable, so a bad deploy does not take traffic)
-2. Add a PostgreSQL database to the project.
+Railway no longer reads `railway.json` for new services (Config as Code was retired for them, and stops working for
+existing ones on 2026-12-01), so the settings live on the service itself.
+
+1. Create a project with a PostgreSQL database and one service, `web`, deployed from this repository.
+2. On the `web` service, set:
+
+   | Setting | Value |
+   | --- | --- |
+   | Build command | `npm run build` (type-check, web build, API bundle) |
+   | Pre-deploy command | `npm run db:migrate` |
+   | Start command | `npm start` |
+   | Healthcheck path | `/readyz` (fails while the database is unreachable, so a bad deploy does not take traffic) |
+   | Healthcheck timeout | 60 seconds |
+   | Restart policy | On failure, 5 retries |
+
+   Without the pre-deploy command the server starts against an empty database and exits with
+   `relation "policy_versions" does not exist`.
 3. Keep the service at **one replica**. Rate-limit counters and provider caches are in process memory.
 
 ## 2. Variables

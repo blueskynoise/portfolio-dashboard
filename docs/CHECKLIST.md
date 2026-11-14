@@ -12,7 +12,7 @@ Status as of the last commit on `feature/portfolio-redesign`. "Verified" says ho
 | Unknown never treated as clean | Done | Tests, and an admin invariant |
 | Server-enforced gate (protected bundle and assets) | Done | HTTP tests; curl against the production build |
 | Signed, HTTP-only sessions; expiry; revocation; bound to issuing browser | Done | HTTP tests; curl |
-| Forged forwarding headers ignored | Done | Tests; curl locally. **Not verified on Railway** |
+| Forged forwarding headers ignored | Done | Tests; curl locally; and on Railway: a forged `X-Real-IP` and `X-Forwarded-For` were both ignored |
 | Rate limiting (per-address evaluations, global API, admin login) | Done | HTTP tests |
 | Provider timeouts, retries, caching, daily budgets | Done | Tests with scripted providers |
 | Fail-open with reduced assurance when a provider is down | Done | HTTP tests |
@@ -63,7 +63,7 @@ Status as of the last commit on `feature/portfolio-redesign`. "Verified" says ho
 | Admin analytics behind authentication | Done; tested |
 | Architecture, threat model, privacy, provider and deployment docs | Done |
 | CI workflow | Written. **Never run** (the branch has not been pushed) |
-| Railway deployment | **Not done.** Config and guide written from documentation; nothing deployed |
+| Railway deployment | Deployed to a Railway-generated URL with Postgres. Health, gate enforcement, session cookie and header-spoofing checks passed with curl. **No provider keys set yet, no custom domain, and not yet checked in a browser** |
 | Mobile layout of the new pages | **Checked at 606px only** (no horizontal overflow). Not checked at phone widths or on a device |
 | Accessibility | Keyboard-operable controls, labeled regions, reduced-motion CSS. **No screen-reader testing** |
 | Legal review of notice and consent | **Not done.** See PRIVACY.md |
