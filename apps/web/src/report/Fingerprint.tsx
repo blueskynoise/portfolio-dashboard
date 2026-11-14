@@ -9,8 +9,8 @@ import { SignalList } from './Signals';
  * us say about whether this browser has been here before.
  */
 
-const RECOGNITION_TONE = { recognised: 'chip-warn', probable: 'chip-warn', possible: 'chip-info', similar: 'chip-info', new: '' } as const;
-const RECOGNITION_LABEL = { recognised: 'Recognised', probable: 'Probably returning', possible: 'Possibly returning', similar: 'Similar device seen', new: 'Not seen before' } as const;
+const RECOGNITION_TONE = { recognized: 'chip-warn', probable: 'chip-warn', possible: 'chip-info', similar: 'chip-info', new: '' } as const;
+const RECOGNITION_LABEL = { recognized: 'Recognized', probable: 'Probably returning', possible: 'Possibly returning', similar: 'Similar device seen', new: 'Not seen before' } as const;
 
 export function FingerprintResults({ report }: { report: FingerprintReport }) {
   const { recognition } = report;
@@ -105,7 +105,7 @@ export function FingerprintPanel({ existing, config, onChange }: PanelProps) {
       <div>
         <FingerprintResults report={report} />
         <p className="fp-forget">
-          Stored as keyed hashes for {days} days, with a first-party cookie to recognise this browser.{' '}
+          Stored as keyed hashes for {days} days, with a first-party cookie to recognize this browser.{' '}
           <button type="button" className="link-btn" onClick={() => void forget()}>
             Delete my fingerprint and the cookie
           </button>

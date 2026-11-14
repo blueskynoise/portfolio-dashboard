@@ -91,7 +91,7 @@ export function Admin() {
       <main id="main" tabIndex={-1} className="wrap section" style={{ minHeight: '60vh' }}>
         <form className="card login" onSubmit={(event) => void login(event)}>
           <h1 className="h3">Gateway operations</h1>
-          <p className="muted">Private. Aggregate statistics and organisation-level network attribution for the access gateway.</p>
+          <p className="muted">Private. Aggregate statistics and organization-level network attribution for the access gateway.</p>
           <label>
             <span>Administrator password</span>
             <input type="password" name="password" autoComplete="current-password" required />
@@ -288,13 +288,13 @@ export function Admin() {
               </table>
             </div>
             <p className="eyebrow" style={{ margin: '24px 0 10px' }}>
-              Organisations seen
+              Organizations seen
             </p>
-            {o.organisations.length === 0 ? (
+            {o.organizations.length === 0 ? (
               <p className="muted">None in this window, or no provider configured that supplies them.</p>
             ) : (
               <ul className="orgs">
-                {o.organisations.map((org) => (
+                {o.organizations.map((org) => (
                   <li key={org.name}>
                     <b>{org.name}</b> <span className="chip">{org.type}</span> · {org.visits} visit{org.visits === 1 ? '' : 's'} · last {org.lastSeen.slice(0, 10)}
                   </li>
@@ -335,7 +335,7 @@ export function Admin() {
                     </td>
                     <td className="mono small">{row.reasonCodes.join(', ')}</td>
                     <td>
-                      {row.organisation ?? row.network}
+                      {row.organization ?? row.network}
                       {row.country ? ` · ${row.country}` : ''}
                     </td>
                     <td>{row.browser}</td>

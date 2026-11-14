@@ -33,11 +33,11 @@ describe('the normal case', () => {
   });
 });
 
-describe('privacy tools are not penalised', () => {
+describe('privacy tools are not penalized', () => {
   it('allows a verified Tor user and says Tor was noted, not held against them', () => {
     const outcome = evaluatePolicy(facts({ torExit: true }));
     expect(outcome).toMatchObject({ decision: 'ALLOW', assurance: 'standard' });
-    expect(outcome.reasons.find((r) => r.code === 'TOR_EXIT_NOT_PENALISED')?.effect).toBe('NOTE');
+    expect(outcome.reasons.find((r) => r.code === 'TOR_EXIT_NOT_PENALIZED')?.effect).toBe('NOTE');
   });
 
   it('allows a verified visitor on a hosting network (VPN, proxy, cloud desktop)', () => {
@@ -145,7 +145,7 @@ describe('deny conditions', () => {
     expect(outcome.reasons[0]?.code).toBe('REPEATED_CHALLENGE_FAILURE');
   });
 
-  it('a verified visitor is still denied when flooding: verification is not a licence', () => {
+  it('a verified visitor is still denied when flooding: verification is not a license', () => {
     expect(evaluatePolicy(facts({ recentAssessments: 500 })).decision).toBe('DENY');
   });
 });

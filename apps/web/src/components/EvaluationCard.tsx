@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { AssessmentReport } from '@portfolio/contracts';
 import { api } from '../lib/api';
 import { Link } from '../lib/router';
-import { summarise } from '../report/Signals';
+import { summarize } from '../report/Signals';
 
 /**
  * The visitor's own evaluation, in brief.
@@ -43,7 +43,7 @@ export function EvaluationCard() {
             {TITLE[report.decision]}
             <span>{report.assurance} assurance</span>
           </p>
-          <p className="eval-sentence">{summarise(report.signals)}</p>
+          <p className="eval-sentence">{summarize(report.signals)}</p>
           <dl>
             <div>
               <dt>Signals established</dt>

@@ -8,7 +8,7 @@ Status as of the last commit on `feature/portfolio-redesign`. "Verified" says ho
 | --- | --- | --- |
 | Versioned, deterministic policy with reason codes | Done | Unit tests |
 | ALLOW / CHALLENGE / DENY, ALLOW as the normal outcome | Done | Unit + HTTP tests |
-| VPN, Tor, privacy browsers not penalised | Done | Tests |
+| VPN, Tor, privacy browsers not penalized | Done | Tests |
 | Unknown never treated as clean | Done | Tests, and an admin invariant |
 | Server-enforced gate (protected bundle and assets) | Done | HTTP tests; curl against the production build |
 | Signed, HTTP-only sessions; expiry; revocation; bound to issuing browser | Done | HTTP tests; curl |
@@ -30,17 +30,17 @@ Status as of the last commit on `feature/portfolio-redesign`. "Verified" says ho
 | Per-signal source, method, kind, reliability, limitation | Done | In the browser |
 | Passive reveal without consent prompt | Done | In the browser (loopback only, so enrichment showed as unknown) |
 | Opt-in fingerprint (ThumbmarkJS + first-party collectors) | Done | In Chrome on macOS: real GPU, canvas, WebGL, audio values |
-| Recognition with stated confidence | Done | Tests; the cookie path seen in Chrome ("recognised", high confidence). The no-cookie paths are covered by tests only |
+| Recognition with stated confidence | Done | Tests; the cookie path seen in Chrome ("recognized", high confidence). The no-cookie paths are covered by tests only |
 | Script-versus-connection inconsistencies | Done | Tests |
 | Consent required server-side; deletion endpoint | Done | HTTP tests |
-| Other browsers (Firefox, Safari, Brave, mobile) | **Not tested** | Collectors are defensive, but behaviour was only observed in Chrome |
+| Other browsers (Firefox, Safari, Brave, mobile) | **Not tested** | Collectors are defensive, but behavior was only observed in Chrome |
 
-## Programme case study
+## Program case study
 
 | Item | Status | Verified |
 | --- | --- | --- |
 | Internally consistent synthetic dataset | Done | Tests: every record accounted for, flows balance in every view |
-| Real pipeline (normalise, dedupe, correlate, ownership) | Done | Tests |
+| Real pipeline (normalize, dedupe, correlate, ownership) | Done | Tests |
 | Metrics with stated denominators and stable cohorts | Done | Tests |
 | Narrative tagged computed / explanation / hypothesis / caveat | Done | Tests, including that the conclusion changes when the data does |
 | Interactive filters recompute everything | Done | In the browser |
@@ -65,5 +65,5 @@ Status as of the last commit on `feature/portfolio-redesign`. "Verified" says ho
 | CI workflow | Written. **Never run** (the branch has not been pushed) |
 | Railway deployment | **Not done.** Config and guide written from documentation; nothing deployed |
 | Mobile layout of the new pages | **Checked at 606px only** (no horizontal overflow). Not checked at phone widths or on a device |
-| Accessibility | Keyboard-operable controls, labelled regions, reduced-motion CSS. **No screen-reader testing** |
+| Accessibility | Keyboard-operable controls, labeled regions, reduced-motion CSS. **No screen-reader testing** |
 | Legal review of notice and consent | **Not done.** See PRIVACY.md |

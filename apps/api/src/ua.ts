@@ -1,8 +1,8 @@
 /**
  * A deliberately small User-Agent reader.
  *
- * The header is whatever the client chose to send, so this is labelling,
- * not identification. It recognises the common families and says
+ * The header is whatever the client chose to send, so this is labeling,
+ * not identification. It recognizes the common families and says
  * "unknown" for everything else.
  */
 export interface ParsedUa {

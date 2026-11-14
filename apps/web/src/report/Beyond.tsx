@@ -11,7 +11,7 @@ const TIERS: { title: string; needs: string; items: string[] }[] = [
     title: 'With a permission prompt',
     needs: 'You would be asked, and could refuse.',
     items: [
-      'Precise location, to within metres, instead of a guess from your IP address.',
+      'Precise location, to within meters, instead of a guess from your IP address.',
       'Camera and microphone, and the names of each device attached.',
       'Notifications, which also give a site a way to reach you after you leave.',
       'Clipboard contents, and Bluetooth or USB devices nearby.',
@@ -21,10 +21,10 @@ const TIERS: { title: string; needs: string; items: string[] }[] = [
     title: 'With commercial visitor-identification services',
     needs: 'A third-party tracking tag on the page, and a contract.',
     items: [
-      'Company identification tags (Leadfeeder and similar) match your address against their own database of business networks and report the organisation, often with firmographics.',
+      'Company identification tags (Leadfeeder and similar) match your address against their own database of business networks and report the organization, often with firmographics.',
       'Person-level "identity resolution" services (RB2B and similar) go further, matching a visit against data co-ops built from logins on other sites to suggest a named individual. Coverage is partial and mostly US.',
       'Advertising networks link a browser to a profile built across every site that carries their tags.',
-      'None of these is used here. The organisation shown above comes from public address-registration records, looked up on our own server.',
+      'None of these is used here. The organization shown above comes from public address-registration records, looked up on our own server.',
     ],
   },
   {

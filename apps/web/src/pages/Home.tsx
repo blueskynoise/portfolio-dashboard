@@ -21,9 +21,9 @@ function CaseInsight() {
   useEffect(() => {
     let live = true;
     const build = (): void => {
-      void import('@portfolio/analytics').then(({ analyse, buildModel, DEFAULT_VIEW, generateSources, tell }) => {
+      void import('@portfolio/analytics').then(({ analyze, buildModel, DEFAULT_VIEW, generateSources, tell }) => {
         const model = buildModel(generateSources());
-        const analysis = analyse(model, DEFAULT_VIEW);
+        const analysis = analyze(model, DEFAULT_VIEW);
         if (live) setData({ analysis, story: tell(model, analysis) });
       });
     };
@@ -41,7 +41,7 @@ function CaseInsight() {
     <div className="insight" aria-busy={!data}>
       <div className="insight-copy">
         <p className="eyebrow">Case study · synthetic company</p>
-        <p className="insight-question">“Our critical vulnerability backlog grew this quarter. Is the programme getting worse?”</p>
+        <p className="insight-question">“Our critical vulnerability backlog grew this quarter. Is the program getting worse?”</p>
         <dl className="insight-numbers">
           <div>
             <dd>{a ? signedPct(a.backlogChange) : '—'}</dd>

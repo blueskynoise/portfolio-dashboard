@@ -23,7 +23,7 @@ function load(): Promise<TurnstileApi> {
     const script = document.createElement('script');
     script.src = SCRIPT;
     script.async = true;
-    script.onload = () => (window.turnstile ? resolve(window.turnstile) : reject(new Error('turnstile did not initialise')));
+    script.onload = () => (window.turnstile ? resolve(window.turnstile) : reject(new Error('turnstile did not initialize')));
     script.onerror = () => reject(new Error('turnstile script blocked or unreachable'));
     document.head.appendChild(script);
   });

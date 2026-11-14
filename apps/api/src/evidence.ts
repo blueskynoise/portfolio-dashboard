@@ -178,7 +178,7 @@ export function buildEvidence(input: {
       }
     : { ...gapFrom(ipapi.result), source: ipapi.result.provider, method: 'enrichment' });
 
-  add('network.organisation', 'Organisation behind the address', 'identity', rich?.companyName
+  add('network.organization', 'Organization behind the address', 'identity', rich?.companyName
     ? {
         value: `${rich.companyName}${rich.companyDomain ? ` (${rich.companyDomain})` : ''}`,
         status: 'enriched',
@@ -193,7 +193,7 @@ export function buildEvidence(input: {
             ? 'This is an internet provider, so it says which company sells you connectivity and nothing about where you work.'
             : rich.companyType === 'hosting'
               ? 'This is a hosting company. It usually means a VPN, proxy, cloud desktop or server, not an employer.'
-              : 'If this names an organisation, the connection left through its network. That is a statement about a network. It does not identify you, and guests, contractors and VPN users all look the same.',
+              : 'If this names an organization, the connection left through its network. That is a statement about a network. It does not identify you, and guests, contractors and VPN users all look the same.',
       }
     : { ...gapFrom(ipapi.result), source: ipapi.result.provider, method: 'enrichment' });
 
@@ -222,7 +222,7 @@ export function buildEvidence(input: {
       source: rich?.isDatacenter !== null && rich ? ipapi.result.provider : ipinfo.result.provider,
       method: 'enrichment',
       kind: 'classification',
-      how: 'The provider matches the address against known datacentre and cloud ranges.',
+      how: 'The provider matches the address against known datacenter and cloud ranges.',
       note: 'People do browse from hosting ranges: commercial VPNs, cloud desktops and corporate egress all live there.',
     };
   } else if (asn && KNOWN_HOSTING_ASNS.has(asn)) {
@@ -250,9 +250,9 @@ export function buildEvidence(input: {
         : 'Unknown: there is no network information to classify.',
     };
   }
-  add('network.hosting', 'Hosting or datacentre network', 'network', hostingInit);
+  add('network.hosting', 'Hosting or datacenter network', 'network', hostingInit);
 
-  add('network.anonymiser', 'VPN or proxy', 'network', rich
+  add('network.anonymizer', 'VPN or proxy', 'network', rich
     ? {
         value: rich.isVpn ? (rich.vpnService ?? 'VPN') : rich.isProxy ? 'proxy' : false,
         status: 'enriched',
@@ -277,7 +277,7 @@ export function buildEvidence(input: {
         kind: 'fact',
         ageSeconds: tor.result.ageSeconds,
         how: 'Checked against the list of exit relays that the Tor Project itself publishes.',
-        note: `${torCorroborated ? 'A second provider agrees. ' : ''}${tor.result.detail?.startsWith('list is stale') ? 'The list has not refreshed recently, so this answer is older than it should be. ' : ''}Tor use is noted and not penalised.`,
+        note: `${torCorroborated ? 'A second provider agrees. ' : ''}${tor.result.detail?.startsWith('list is stale') ? 'The list has not refreshed recently, so this answer is older than it should be. ' : ''}Tor use is noted and not penalized.`,
       }
     : { ...gapFrom(tor.result), source: tor.result.provider, method: 'enrichment' });
 

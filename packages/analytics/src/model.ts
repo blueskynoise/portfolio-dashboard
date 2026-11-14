@@ -2,7 +2,7 @@
  * The synthetic enterprise.
  *
  * Everything in this package describes a company that does not exist.
- * No record comes from, or is modelled on, any real organisation's data.
+ * No record comes from, or is modeled on, any real organization's data.
  * Identifiers use a SYN- prefix so they cannot be mistaken for real ones.
  *
  * Time is measured in days from the start of the previous quarter:
@@ -25,9 +25,9 @@ export type Environment = 'prod' | 'staging' | 'dev';
 export type Cohort = 'stable' | 'new';
 /**
  * How well we know who owns an asset.
- *   verified      tagged to a service whose catalogue entry names a current team
- *   stale         the catalogue names a team that no longer owns it
- *   missing       tagged to a service with no owner in the catalogue
+ *   verified      tagged to a service whose catalog entry names a current team
+ *   stale         the catalog names a team that no longer owns it
+ *   missing       tagged to a service with no owner in the catalog
  *   unreconciled  not tagged to any service, so there is nothing to look up
  */
 export type Ownership = 'verified' | 'stale' | 'missing' | 'unreconciled';
@@ -85,7 +85,7 @@ export interface CloudAccount {
 export interface CatalogService {
   name: string;
   tier: 1 | 2 | 3;
-  /** Team named in the service catalogue, if any. */
+  /** Team named in the service catalog, if any. */
   owner: string | null;
   /** Whether that team still owns the service. False = the entry is out of date. */
   ownerCurrent: boolean;
@@ -138,7 +138,7 @@ export interface Sources {
   ingestRuns: IngestRun[];
 }
 
-// ── The modelled view the analysis runs on ────────────────────────────
+// ── The modeled view the analysis runs on ────────────────────────────
 
 export interface SourceRef {
   source: 'cloud_scanner' | 'dependency_scanner';

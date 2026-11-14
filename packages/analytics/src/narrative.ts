@@ -1,5 +1,5 @@
 import { CURRENT, type Model, type Ownership } from './model';
-import { analyse, coverageSeries, type Analysis } from './metrics';
+import { analyze, coverageSeries, type Analysis } from './metrics';
 import { resolveOwnership } from './pipeline';
 
 /**
@@ -115,7 +115,7 @@ export function tell(model: Model, analysis: Analysis): Story {
     conclusion = 'These accounts were not being scanned before, so the backlog did not grow: it became visible. A percentage change from zero would be meaningless and is not shown.';
   } else if (net > 0 && view.cohort === 'all' && flow.discoveredInNewScope >= net && (stableChange ?? 0) <= 0.02) {
     verdict = 'scope_expansion';
-    headline = 'The backlog grew because we can see more, not because the programme got worse.';
+    headline = 'The backlog grew because we can see more, not because the program got worse.';
     conclusion = `The increase of ${n(net)} is smaller than the ${n(flow.discoveredInNewScope)} findings that arrived with newly scanned accounts. Where coverage did not change, the backlog ${stableChange !== null && stableChange < -0.005 ? 'fell' : 'held steady'}. Those vulnerabilities existed before this quarter; what changed is that they are now counted.`;
   } else if (net > 0 && (view.cohort !== 'all' ? (analysis.backlogChange ?? 0) > 0.05 : (stableChange ?? 0) > 0.05)) {
     verdict = 'deteriorating';
@@ -157,7 +157,7 @@ export function tell(model: Model, analysis: Analysis): Story {
     // Is that just the newly onboarded accounts? Check inside the accounts that did not change.
     let confounded = true;
     if (view.cohort === 'all') {
-      const stable = analyse(model, { ...view, cohort: 'stable' });
+      const stable = analyze(model, { ...view, cohort: 'stable' });
       const stableUnowned = stable.ownership.filter((o) => UNOWNED.includes(o.ownership));
       const stableOpen = stableUnowned.reduce((sum, o) => sum + o.open, 0);
       const stableRate = stableOpen === 0 ? null : stableUnowned.reduce((sum, o) => sum + o.overSla, 0) / stableOpen;

@@ -5,8 +5,8 @@ import { skipped, unconfigured, type ProviderCall } from './types';
 /**
  * ipapi.is: who operates an address range and what kind of network it is.
  *
- * This is the richest enrichment source: the organisation in the WHOIS
- * record, the network type, a coarse location, and flags for datacentres,
+ * This is the richest enrichment source: the organization in the WHOIS
+ * record, the network type, a coarse location, and flags for datacenters,
  * VPNs, proxies and Tor.
  *
  * Its own documentation calls the data probabilistic. "company" is the
@@ -38,7 +38,7 @@ export interface IpapiIntel {
   isCrawler: string | null;
 }
 
-const PURPOSE = 'Organisation, network type, location, anonymiser flags';
+const PURPOSE = 'Organization, network type, location, anonymizer flags';
 const str = (value: unknown): string | null => (typeof value === 'string' && value.length > 0 ? value : null);
 const bool = (value: unknown): boolean | null => (typeof value === 'boolean' ? value : null);
 const obj = (value: unknown): Record<string, unknown> | null => (value && typeof value === 'object' ? (value as Record<string, unknown>) : null);

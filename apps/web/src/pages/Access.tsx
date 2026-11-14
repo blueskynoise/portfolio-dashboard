@@ -10,7 +10,7 @@ import { DecisionBanner, Providers, Reasons, Rules, Stages } from '../report/Dec
 import { FingerprintPanel } from '../report/Fingerprint';
 import { GatewayHealth } from '../report/GatewayHealth';
 import { PrivacyNotice } from '../report/Privacy';
-import { SignalGroups, summarise } from '../report/Signals';
+import { SignalGroups, summarize } from '../report/Signals';
 
 const FLOW: [string, string][] = [
   ['Request arrives', 'The server decides which forwarding header to believe from configuration, never from whichever headers are present. A client-supplied X-Forwarded-For is ignored.'],
@@ -77,7 +77,7 @@ export function Access() {
           <div className="wrap program-body">
             {/* The conclusion first: what was decided, how much it is worth, and one sentence about the visit. */}
             <DecisionBanner report={report}>
-              <p className="access-sentence">{summarise(report.signals)}</p>
+              <p className="access-sentence">{summarize(report.signals)}</p>
             </DecisionBanner>
 
             <dl className="kpis access-kpis">
@@ -174,7 +174,7 @@ export function Access() {
                   <div>
                     <h3 className="h3">Never held against a visitor</h3>
                     <ul className="limits">
-                      {policy.notPenalised.map((item) => (
+                      {policy.notPenalized.map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>

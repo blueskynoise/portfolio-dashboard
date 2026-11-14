@@ -5,7 +5,7 @@ import { hmacIp, isPublicIp, resolveClientIp, truncateIp } from './clientIp';
 import { loadConfig } from './config';
 import { correlate, type CurrentVisit } from './correlation';
 import { checkConsistency, type RequestEvidence } from './evidence';
-import { findInconsistencies, sanitiseSubmission } from './fingerprint';
+import { findInconsistencies, sanitizeSubmission } from './fingerprint';
 import { requestJson } from './http';
 import { DailyBudget } from './providers/budget';
 import { parseIpapi } from './providers/ipapi';
@@ -41,7 +41,7 @@ describe('client address resolution', () => {
     expect(resolveClientIp('x-forwarded-for', 3, inputs({ 'x-forwarded-for': '203.0.113.7' })).ip).toBeNull();
   });
 
-  it('unwraps IPv4-mapped IPv6 and recognises non-public ranges', () => {
+  it('unwraps IPv4-mapped IPv6 and recognizes non-public ranges', () => {
     expect(resolveClientIp('socket', 1, inputs({}, '::ffff:203.0.113.7')).ip).toBe('203.0.113.7');
     for (const ip of ['10.1.2.3', '192.168.1.1', '172.20.0.1', '127.0.0.1', '100.64.0.1', '::1', 'fd00::1']) expect(isPublicIp(ip)).toBe(false);
     for (const ip of ['203.0.113.7', '8.8.8.8', '2001:db8::1']) expect(isPublicIp(ip)).toBe(true);
@@ -242,7 +242,7 @@ describe('script-versus-request consistency', () => {
 
 describe('fingerprint submissions', () => {
   it('keeps known fields, bounds sizes and drops everything else', () => {
-    const clean = sanitiseSubmission({
+    const clean = sanitizeSubmission({
       libraryHash: 'abcdef123456',
       webglRenderer: 'x'.repeat(500),
       hardwareConcurrency: 1e9,
@@ -258,9 +258,9 @@ describe('fingerprint submissions', () => {
   });
 
   it('rejects a submission without a usable hash', () => {
-    expect(sanitiseSubmission({})).toBeNull();
-    expect(sanitiseSubmission({ libraryHash: '<script>alert(1)</script>' })).toBeNull();
-    expect(sanitiseSubmission('nope')).toBeNull();
+    expect(sanitizeSubmission({})).toBeNull();
+    expect(sanitizeSubmission({ libraryHash: '<script>alert(1)</script>' })).toBeNull();
+    expect(sanitizeSubmission('nope')).toBeNull();
   });
 
   it('reports clock-versus-network and platform mismatches without calling them proof', () => {
@@ -285,9 +285,9 @@ describe('visit correlation', () => {
 
   it('a returning cookie is strong evidence, even if the fingerprint drifted', () => {
     const same = correlate(visit(), [earlier()]);
-    expect(same).toMatchObject({ status: 'recognised', confidence: 'high', priorVisits: 1 });
+    expect(same).toMatchObject({ status: 'recognized', confidence: 'high', priorVisits: 1 });
     const drifted = correlate(visit({ libraryHash: 'fp-2', canvasHash: 'canvas-2' }), [earlier()]);
-    expect(drifted.status).toBe('recognised');
+    expect(drifted.status).toBe('recognized');
     expect(drifted.evidence.some((e) => !e.supports && /changed/.test(e.text))).toBe(true);
   });
 
@@ -361,9 +361,9 @@ describe('operational metrics', () => {
     expect(overview([record('a')], [call('a', 'abuseipdb', 'error')]).misclassifiedFailures).toBe(0);
   });
 
-  it('lists organisations but never internet providers or hosts', () => {
+  it('lists organizations but never internet providers or hosts', () => {
     const o = overview([record('a', { orgName: 'Example Corp', orgType: 'business' }), record('b', { orgName: 'Example Corp', orgType: 'business' }), record('c', { orgName: 'Example Broadband', orgType: 'isp' }), record('d', { orgName: 'Example Cloud', orgType: 'hosting' })]);
-    expect(o.organisations.map((x) => [x.name, x.visits])).toEqual([['Example Corp', 2]]);
+    expect(o.organizations.map((x) => [x.name, x.visits])).toEqual([['Example Corp', 2]]);
   });
 
   it('derives findings an operator can act on, and says so when there is nothing', () => {

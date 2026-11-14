@@ -21,7 +21,7 @@ export function PrivacyNotice({ config }: { config: GateConfig | null }) {
       <h4>Only if you opt in</h4>
       <ul>
         <li>A browser fingerprint (canvas, WebGL, audio, fonts, hardware traits), stored as keyed hashes.</li>
-        <li>A first-party cookie, kept for 90 days, used to recognise a returning browser.</li>
+        <li>A first-party cookie, kept for 90 days, used to recognize a returning browser.</li>
         <li>You can delete both at any time from the “Your evaluation” page.</li>
       </ul>
       <h4>What is kept</h4>
@@ -31,7 +31,7 @@ export function PrivacyNotice({ config }: { config: GateConfig | null }) {
           a keyed hash; the full address and full User-Agent string are not stored.
         </li>
         <li>There is no advertising, no analytics service and no third-party tracking tag.</li>
-        <li>The site owner can see aggregate statistics and organisation-level network attribution. Nothing here identifies you personally.</li>
+        <li>The site owner can see aggregate statistics and organization-level network attribution. Nothing here identifies you personally.</li>
       </ul>
       {config && (
         <>

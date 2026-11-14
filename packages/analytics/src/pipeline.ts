@@ -15,7 +15,7 @@ import {
 /**
  * From source exports to one model of the estate.
  *
- * validate -> normalise -> correlate to an asset -> deduplicate across
+ * validate -> normalize -> correlate to an asset -> deduplicate across
  * sources -> attach ownership -> attach ticket history.
  *
  * Each step is a small pure function so it can be tested on its own, and
@@ -57,9 +57,9 @@ export function unreliableWeeks(runs: readonly IngestRun[]): Map<number, string[
   return weeks;
 }
 
-// ── Normalisation ─────────────────────────────────────────────────────
+// ── Normalization ─────────────────────────────────────────────────────
 
-export interface Normalised {
+export interface Normalized {
   ref: SourceRef;
   account: string;
   assetName: string;
@@ -73,7 +73,7 @@ export interface Normalised {
   open: boolean;
 }
 
-export type NormaliseResult = { ok: true; record: Normalised } | { ok: false; id: string; reason: string };
+export type NormalizeResult = { ok: true; record: Normalized } | { ok: false; id: string; reason: string };
 
 const CLOUD_SEVERITY: Record<string, Severity> = { CRITICAL: 'critical', HIGH: 'high', MEDIUM: 'medium', LOW: 'low' };
 
@@ -90,7 +90,7 @@ const day = (iso: string | null): number | null => {
   return Number.isNaN(value) ? null : isoToDay(iso);
 };
 
-export function normaliseCloud(raw: CloudIssue): NormaliseResult {
+export function normalizeCloud(raw: CloudIssue): NormalizeResult {
   const severity = CLOUD_SEVERITY[raw.severity];
   const firstSeen = day(raw.firstDetectedAt);
   if (!raw.resource?.account || !raw.resource.name) return { ok: false, id: raw.id, reason: 'no resource' };
@@ -114,7 +114,7 @@ export function normaliseCloud(raw: CloudIssue): NormaliseResult {
   };
 }
 
-export function normaliseDependency(raw: DependencyIssue): NormaliseResult {
+export function normalizeDependency(raw: DependencyIssue): NormalizeResult {
   // "syn-corp/<account>.<ASSET-NAME>"
   const match = /^[^/]+\/([^.]+)\.(.+)$/.exec(raw.project ?? '');
   const firstSeen = day(raw.introduced);
@@ -169,7 +169,7 @@ const latest = (a: number | null, b: number | null): number | null => (a === nul
  * the earliest, severity the highest, and the finding stays open until
  * every source that reported it agrees it is closed.
  */
-export function mergeBySameFinding(records: readonly Normalised[]): { merged: Merged[]; duplicates: number } {
+export function mergeBySameFinding(records: readonly Normalized[]): { merged: Merged[]; duplicates: number } {
   const byKey = new Map<string, Merged>();
   let duplicates = 0;
   for (const r of records) {
@@ -201,7 +201,7 @@ export function resolveOwnership(
 ): { ownership: Ownership; team: string | null; tier: 1 | 2 | 3; service: string | null } {
   if (!serviceTag) return { ownership: 'unreconciled', team: null, tier: 3, service: null };
   const entry = catalog.get(serviceTag);
-  // A tag pointing at a service the catalogue has never heard of is no better than no tag.
+  // A tag pointing at a service the catalog has never heard of is no better than no tag.
   if (!entry) return { ownership: 'unreconciled', team: null, tier: 3, service: null };
   if (!entry.owner) return { ownership: 'missing', team: null, tier: entry.tier, service: serviceTag };
   return { ownership: entry.ownerCurrent ? 'verified' : 'stale', team: entry.owner, tier: entry.tier, service: serviceTag };
@@ -211,18 +211,18 @@ export function resolveOwnership(
 
 export function buildModel(sources: Sources): Model {
   const rejected: ModelQuality['rejected'] = [];
-  const normalised: Normalised[] = [];
+  const normalized: Normalized[] = [];
   for (const raw of sources.cloudIssues) {
-    const result = normaliseCloud(raw);
-    if (result.ok) normalised.push(result.record);
+    const result = normalizeCloud(raw);
+    if (result.ok) normalized.push(result.record);
     else rejected.push({ source: 'cloud_scanner', id: result.id, reason: result.reason });
   }
   for (const raw of sources.dependencyIssues) {
-    const result = normaliseDependency(raw);
-    if (result.ok) normalised.push(result.record);
+    const result = normalizeDependency(raw);
+    if (result.ok) normalized.push(result.record);
     else rejected.push({ source: 'dependency_scanner', id: result.id, reason: result.reason });
   }
-  const { merged, duplicates } = mergeBySameFinding(normalised);
+  const { merged, duplicates } = mergeBySameFinding(normalized);
 
   const catalog = new Map(sources.catalog.map((s) => [s.name, s]));
   const assets = new Map(sources.inventory.map((a) => [`${a.account}/${a.name}`, a]));
@@ -234,7 +234,7 @@ export function buildModel(sources: Sources): Model {
     const asset = assets.get(`${m.account}/${m.assetName}`);
     const account = accounts.get(m.account);
     if (!asset || !account) {
-      // A finding on something the inventory does not know about cannot be placed, owned or prioritised.
+      // A finding on something the inventory does not know about cannot be placed, owned or prioritized.
       rejected.push({ source: m.sources[0]?.source ?? 'unknown', id: m.sources[0]?.id ?? m.key, reason: 'asset not found in inventory' });
       continue;
     }

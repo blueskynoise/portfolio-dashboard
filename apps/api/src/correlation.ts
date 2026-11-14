@@ -67,7 +67,7 @@ export function correlate(current: CurrentVisit, prior: readonly FingerprintReco
       });
     }
     return {
-      status: 'recognised',
+      status: 'recognized',
       confidence: 'high',
       headline: `This browser has been here before: ${byCookie.length} earlier visit${byCookie.length === 1 ? '' : 's'} on record.`,
       evidence,

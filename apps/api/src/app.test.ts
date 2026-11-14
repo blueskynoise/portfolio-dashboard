@@ -37,7 +37,7 @@ describe('a successful assessment', () => {
 
     expect(signalOf(report, 'network.ip')).toMatchObject({ value: VISITOR_IP, method: 'connection', kind: 'fact' });
     expect(signalOf(report, 'network.asn')).toMatchObject({ value: 'AS64500 · Example Broadband', method: 'enrichment', reliability: 'high' });
-    expect(signalOf(report, 'network.organisation')).toMatchObject({ kind: 'inference', reliability: 'low' });
+    expect(signalOf(report, 'network.organization')).toMatchObject({ kind: 'inference', reliability: 'low' });
     expect(signalOf(report, 'browser.identity').value).toBe('Chrome 140 on Windows');
     // What a public website cannot know is stated, not omitted.
     expect(signalOf(report, 'device.posture')).toMatchObject({ status: 'not_measurable', value: null });
@@ -49,9 +49,9 @@ describe('a successful assessment', () => {
     const { body } = await assess(h);
     const stored = [...h.store.assessments.values()][0];
     expect(stored?.ipPrefix).toBe('203.0.113.0/24');
-    const serialised = JSON.stringify(stored);
-    expect(serialised).not.toContain(VISITOR_IP);
-    expect(serialised).not.toContain(CHROME_UA);
+    const serialized = JSON.stringify(stored);
+    expect(serialized).not.toContain(VISITOR_IP);
+    expect(serialized).not.toContain(CHROME_UA);
     expect(stored?.policyVersion).toBe(POLICY_VERSION);
     expect(stored?.id).toBe(body.report.id);
   });
@@ -86,7 +86,7 @@ describe('missing and failing evidence', () => {
     const report = body.report as AssessmentReport;
     expect(report.providers.find((p) => p.provider === 'ipapi.is')?.status).toBe('error');
     expect(report).toMatchObject({ decision: 'ALLOW', assurance: 'reduced' });
-    expect(signalOf(report, 'network.anonymiser')).toMatchObject({ status: 'error', value: null });
+    expect(signalOf(report, 'network.anonymizer')).toMatchObject({ status: 'error', value: null });
     expect(report.rules.find((r) => r.code === 'HOSTING_NETWORK_UNVERIFIED')?.outcome).toBe('not_evaluable');
   });
 
@@ -133,14 +133,14 @@ describe('missing and failing evidence', () => {
     expect(sessionCookie).toBeUndefined();
   });
 
-  it('does not penalise a verified visitor on a VPN in a datacentre', async () => {
+  it('does not penalize a verified visitor on a VPN in a datacenter', async () => {
     h = await harness();
     h.world.ipapi = () => json(ipapiBody({ is_datacenter: true, is_vpn: true, vpn: { service: 'ExampleVPN' }, company: { name: 'ExampleHost', type: 'hosting' } }));
     const { body } = await assess(h);
     const report = body.report as AssessmentReport;
     expect(report).toMatchObject({ decision: 'ALLOW', assurance: 'standard' });
     expect(reasons(report)).toContain('HOSTING_NETWORK_VERIFIED');
-    expect(signalOf(report, 'network.anonymiser').value).toBe('ExampleVPN');
+    expect(signalOf(report, 'network.anonymizer').value).toBe('ExampleVPN');
   });
 });
 
@@ -367,7 +367,7 @@ describe('fingerprinting is opt-in', () => {
     expect(report.inconsistencies[0]).toMatchObject({ serverSees: expect.stringContaining('America/New_York') });
   });
 
-  it('recognises a returning browser by cookie, and hedges on a fingerprint alone', async () => {
+  it('recognizes a returning browser by cookie, and hedges on a fingerprint alone', async () => {
     h = await harness();
     const first = await assess(h);
     const firstFp = await submitFingerprint(first.cookies);
@@ -376,7 +376,7 @@ describe('fingerprinting is opt-in', () => {
     h.clock.now += 86_400_000;
     const second = await assess(h);
     const withCookie = (await submitFingerprint({ ...second.cookies, pd_browser: browserCookie })).json() as FingerprintReport;
-    expect(withCookie.recognition).toMatchObject({ status: 'recognised', confidence: 'high', priorVisits: 1 });
+    expect(withCookie.recognition).toMatchObject({ status: 'recognized', confidence: 'high', priorVisits: 1 });
 
     h.clock.now += 86_400_000;
     const third = await assess(h);

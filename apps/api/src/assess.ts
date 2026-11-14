@@ -38,12 +38,12 @@ export interface AssessmentResult {
 export const LIMITATIONS = [
   'This is a passive evaluation of a connection and a browser. It is not a device health check: nothing here knows whether your disk is encrypted, your system is patched or your machine is managed.',
   'Enrichment comes from third parties and is evidence with an error rate, not ground truth. Each signal says how it can be wrong.',
-  'Anything the browser reports about itself can be forged. Signals from the page script are labelled as claims and weighted accordingly.',
+  'Anything the browser reports about itself can be forged. Signals from the page script are labeled as claims and weighted accordingly.',
   'This is a public portfolio. Nothing confidential sits behind the gate; it exists to show how such a gate is built, and it is enforced by the server all the same.',
 ];
 
 const notRequested = (why: string): Enrichment => ({
-  ipapi: skipped('ipapi.is', 'Organisation, network type, location, anonymiser flags', why),
+  ipapi: skipped('ipapi.is', 'Organization, network type, location, anonymizer flags', why),
   ipinfo: skipped('ipinfo', 'Network ownership (ASN, operator, country)', why),
   tor: skipped('torproject', 'Tor exit relay membership', why),
   abuse: skipped('abuseipdb', 'Address abuse reputation', why),

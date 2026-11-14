@@ -12,9 +12,9 @@ Checked in November 2026. Pricing and terms change; re-verify before relying on 
 - Outcomes are kept apart: the visitor failing, the provider being unreachable, and our secret being wrong are three
   different things and only the first counts against anyone.
 
-### ipapi.is — organisation, network type, location, anonymiser flags
+### ipapi.is — organization, network type, location, anonymizer flags
 - Free: 1,000 requests a day with a registered key; their terms say commercial use is included.
-- Returns the organisation in the WHOIS record for the range, a network type (isp, hosting, business, education,
+- Returns the organization in the WHOIS record for the range, a network type (isp, hosting, business, education,
   government, banking), coarse location with an accuracy rating, and `is_datacenter`, `is_vpn`, `is_proxy`, `is_tor`,
   `is_mobile`, `is_abuser`.
 - Their own caveats, which the UI repeats: the data is probabilistic; "company" is the most specific WHOIS record and can
@@ -59,12 +59,12 @@ Available only on higher paid tiers; sources disagreed on which. ipapi.is suppli
 ### People Data Labs IP enrichment
 Has a real API, but the free allowance is a few dozen IP lookups a month. Too small for production.
 
-## What "organisation" means in this system
+## What "organization" means in this system
 
-It is the organisation that registered the address range, according to one provider. For a home connection that is the
+It is the organization that registered the address range, according to one provider. For a home connection that is the
 ISP; for a VPN it is the VPN's host; for an office it is, at best, whoever registered the block. The report labels it an
 inference with low or medium reliability, and the admin list excludes ISPs and hosting companies. It can tell you that
-*a connection came through a named organisation's network*. It cannot tell you who was at the keyboard, or that they
+*a connection came through a named organization's network*. It cannot tell you who was at the keyboard, or that they
 work there.
 
 ## Sources

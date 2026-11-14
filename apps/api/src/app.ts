@@ -11,7 +11,7 @@ import { hmacIp, isPublicIp, resolveClientIp } from './clientIp';
 import type { Config } from './config';
 import { correlate } from './correlation';
 import type { RequestEvidence } from './evidence';
-import { buildFingerprintSignals, findInconsistencies, sanitiseSubmission } from './fingerprint';
+import { buildFingerprintSignals, findInconsistencies, sanitizeSubmission } from './fingerprint';
 import { SlidingCounter } from './rateLimit';
 import { hashOpaque, hashUserAgent, issueToken, newId, verifyToken } from './sessions';
 import { contentType, type StaticSite } from './static';
@@ -208,7 +208,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     retentionDays: config.retentionDays,
     botVerification: { provider: 'turnstile', configured: providers.turnstile.configured, siteKey: providers.turnstile.siteKey },
     providers: [
-      { name: 'ipapi.is', purpose: 'Organisation, network type, coarse location, VPN/proxy flags', configured: providers.ipapi.configured, note: 'Your IP address is sent to this provider.' },
+      { name: 'ipapi.is', purpose: 'Organization, network type, coarse location, VPN/proxy flags', configured: providers.ipapi.configured, note: 'Your IP address is sent to this provider.' },
       { name: 'IPinfo', purpose: 'Network operator and country (second opinion)', configured: providers.ipinfo.configured, note: 'Your IP address is sent to this provider.' },
       { name: 'Tor Project', purpose: 'Tor exit relay list', configured: true, note: 'A public list we download. Your address is not sent anywhere.' },
       { name: 'AbuseIPDB', purpose: 'Abuse reports about the address', configured: providers.abuse.configured, note: 'Your IP address is sent to this provider.' },
@@ -245,7 +245,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 
     const result = await runAssessment(
       { providers, counters, ipHashSecret: config.ipHashSecret, now },
-      { requestId: req.id, request: requestEvidence(req), body: { client: sanitiseClient(body.client), botToken: typeof body.botToken === 'string' ? body.botToken : undefined }, continuity },
+      { requestId: req.id, request: requestEvidence(req), body: { client: sanitizeClient(body.client), botToken: typeof body.botToken === 'string' ? body.botToken : undefined }, continuity },
     );
     if (result.record.botStatus === 'failed') event(req, 'challenge_failed', result.record.reasonCodes.join(','));
 
@@ -333,7 +333,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     const body = (req.body ?? {}) as { consent?: unknown; fingerprint?: unknown };
     // Fingerprinting is opt-in. Without an explicit yes, nothing is processed or stored.
     if (body.consent !== true) return reply.code(400).send({ error: 'consent_required' });
-    const submission = sanitiseSubmission(body.fingerprint);
+    const submission = sanitizeSubmission(body.fingerprint);
     if (!submission) return reply.code(400).send({ error: 'invalid_fingerprint' });
 
     const previous = await store.getFingerprint(session.assessmentId);
@@ -454,7 +454,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
         policyVersion: a.policyVersion,
         reasonCodes: a.reasonCodes,
         network: a.asn ? `${a.asn}${a.asOrg ? ` ${a.asOrg}` : ''}` : (a.ipPrefix ?? 'unknown'),
-        organisation: a.orgName && a.orgType !== 'isp' && a.orgType !== 'hosting' ? a.orgName : null,
+        organization: a.orgName && a.orgType !== 'isp' && a.orgType !== 'hosting' ? a.orgName : null,
         country: a.country,
         browser: `${a.browserFamily}${a.browserMajor ? ` ${a.browserMajor}` : ''} / ${a.osFamily}`,
         botStatus: a.botStatus,
@@ -507,7 +507,7 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
 }
 
 /** Client evidence is untrusted input: keep only the fields we know, with bounded sizes. */
-function sanitiseClient(raw: unknown): AssessmentRequest['client'] {
+function sanitizeClient(raw: unknown): AssessmentRequest['client'] {
   if (!raw || typeof raw !== 'object') return undefined;
   const input = raw as Record<string, unknown>;
   const flag = (value: unknown): boolean | undefined => (typeof value === 'boolean' ? value : undefined);

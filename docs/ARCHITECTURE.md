@@ -32,7 +32,7 @@ Browser                         Railway edge                 apps/api (Fastify) 
    │
    │  optional, after explicit consent:
    │  POST /api/me/fingerprint {consent: true, fingerprint}
-   ├────────────────────────────────────────────────────────────────►│ sanitise, key the hashes, correlate with earlier visits
+   ├────────────────────────────────────────────────────────────────►│ sanitize, key the hashes, correlate with earlier visits
    │◄──────────────── signals, inconsistencies, recognition ─────────┤ store; set 90-day recognition cookie
 ```
 
@@ -71,7 +71,7 @@ when every provider is down.
 **No numeric risk score.** Each rule is a readable condition with a rationale. A score would look more sophisticated and
 explain less.
 
-**Data minimisation in the schema.** The full IP address and full User-Agent are never stored: only a keyed hash (for
+**Data minimization in the schema.** The full IP address and full User-Agent are never stored: only a keyed hash (for
 counting and rate limits) and a truncated prefix. The visitor sees the full values in the live response, and again later
 only if the request comes from the same address.
 

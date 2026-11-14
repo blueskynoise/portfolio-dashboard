@@ -1,6 +1,6 @@
 -- Access-evaluation storage.
 --
--- Data minimisation is part of the schema: no full IP address and no full
+-- Data minimization is part of the schema: no full IP address and no full
 -- User-Agent string is stored. Addresses are kept as a keyed hash (for
 -- counting) and a truncated prefix (for seeing patterns).
 
@@ -32,7 +32,7 @@ CREATE TABLE assessments (
   session_continuity  text NOT NULL,
   total_ms            integer NOT NULL,
   signal_status       jsonb NOT NULL,
-  -- Organisation that owns the address range, per the enrichment provider. An inference about a network, not a person.
+  -- Organization that owns the address range, per the enrichment provider. An inference about a network, not a person.
   org_name            text,
   org_type            text,
   max_enrichment_age_seconds integer

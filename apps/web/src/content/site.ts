@@ -15,7 +15,7 @@ export const profile = {
   name: 'Mark Graziano',
   headline: 'I build the systems that turn security data into decisions.',
   intro:
-    'I connect fragmented security systems, make programmes measurable, and build the automation that lets an organisation act on what the data shows.',
+    'I connect fragmented security systems, make programs measurable, and build the automation that lets an organization act on what the data shows.',
   email: 'hello@markgraziano.com',
   github: 'https://github.com/blueskynoise',
 };
@@ -56,7 +56,7 @@ export const proof = [
 export const career = {
   title: 'From GRC to security automation engineering',
   lede:
-    'I started in governance, risk and compliance, and led that work. Running a security programme teaches you exactly where it leaks time: the evidence gathered by hand, the questionnaire answered for the fortieth time, the finding that sits because nobody knows whose it is.',
+    'I started in governance, risk and compliance, and led that work. Running a security program teaches you exactly where it leaks time: the evidence gathered by hand, the questionnaire answered for the fortieth time, the finding that sits because nobody knows whose it is.',
   turn:
     'I kept fixing those with engineering rather than process, often enough that it became the job: a dedicated security automation engineering role. I did not leave governance behind to become an engineer. Knowing what a control is for is how I know what is worth building.',
 };
@@ -83,8 +83,8 @@ export const examples: Example[] = [
   },
   {
     title: 'Security data that leadership could use',
-    problem: 'The facts about the programme lived in separate systems that did not agree with each other, so reporting meant reconciling exports by hand.',
-    built: 'I connected the sources, modelled and transformed their data, and built reporting that gave leadership a more useful view of the programme.',
+    problem: 'The facts about the program lived in separate systems that did not agree with each other, so reporting meant reconciling exports by hand.',
+    built: 'I connected the sources, modeled and transformed their data, and built reporting that gave leadership a more useful view of the program.',
     tools: ['CloudQuery', 'dbt', 'S3 + Athena', 'Superset', 'Wiz', 'Snyk', 'Backstage'],
   },
   {
@@ -101,7 +101,7 @@ export const stack = [
   { stage: 'Findings', tools: 'Wiz, Snyk', role: 'Security findings from cloud and code.' },
   { stage: 'Ownership', tools: 'Backstage', role: 'Which team owns which service.' },
   { stage: 'Store and query', tools: 'S3, Athena', role: 'Security data storage and querying.' },
-  { stage: 'Model', tools: 'dbt', role: 'Transformation and modelling.' },
+  { stage: 'Model', tools: 'dbt', role: 'Transformation and modeling.' },
   { stage: 'Report', tools: 'Superset', role: 'Security analytics and dashboards.' },
   { stage: 'Act', tools: 'Tines, Jira', role: 'Automation and workflow integration.' },
 ];

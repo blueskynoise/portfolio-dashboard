@@ -5,7 +5,7 @@ import { Beyond } from '../report/Beyond';
 import { DecisionBanner, Reasons, Stages } from '../report/Decision';
 import { FingerprintPanel } from '../report/Fingerprint';
 import { PrivacyNotice } from '../report/Privacy';
-import { SignalGroups, summarise } from '../report/Signals';
+import { SignalGroups, summarize } from '../report/Signals';
 import { baseline } from './collect';
 import { obtainToken } from './turnstile';
 
@@ -39,7 +39,7 @@ const INITIAL_STEPS: Step[] = [
 /** What is behind the gate. Static copy: the gate bundle carries none of the portfolio's own content. */
 const INSIDE = [
   { title: 'Your evaluation, in full', body: 'Every signal, where it came from, and the policy rule by rule.' },
-  { title: 'A security programme, investigated', body: 'An interactive case study: a vulnerability backlog that grew, and what the data says about why.' },
+  { title: 'A security program, investigated', body: 'An interactive case study: a vulnerability backlog that grew, and what the data says about why.' },
   { title: 'Experience and projects', body: 'From GRC leadership to security automation engineering, and four things built outside work.' },
 ];
 
@@ -91,7 +91,7 @@ export function Gate() {
         error instanceof ApiError && error.status === 429
           ? 'Too many requests from this address just now. Wait a minute and try again.'
           : error instanceof ApiError && error.status === 503
-            ? 'The evaluation could not be recorded, so no decision was issued. This is a fault on our side, not a judgement about you.'
+            ? 'The evaluation could not be recorded, so no decision was issued. This is a fault on our side, not a judgment about you.'
             : 'The evaluation service could not be reached.';
       setPhase({ name: 'unavailable', detail });
     }
@@ -140,7 +140,7 @@ export function Gate() {
             <h1 className="display">
               You haven’t introduced yourself. <em className="mark">But your browser already has.</em>
             </h1>
-            <p className="lede gate-sentence">{summarise(report.signals)}</p>
+            <p className="lede gate-sentence">{summarize(report.signals)}</p>
             <p className="gate-sub">Nobody asked you for any of that. It arrived with the request, or was looked up from it, in {report.totalMs} ms.</p>
           </section>
         )}

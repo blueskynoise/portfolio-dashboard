@@ -6,7 +6,7 @@ import { unreliableWeeks } from './pipeline';
  *
  * Three families that must not be confused:
  *   posture        how much exposure exists (backlog, aging)
- *   effectiveness  how well the programme works it (throughput, time to assign, SLA)
+ *   effectiveness  how well the program works it (throughput, time to assign, SLA)
  *   reliability    how far the data can be trusted (coverage, freshness, reconciliation)
  *
  * Every rate states its denominator, and every comparison between
@@ -208,7 +208,7 @@ export interface Analysis {
   oldest: Finding[];
 }
 
-export function analyse(model: Model, view: View = DEFAULT_VIEW): Analysis {
+export function analyze(model: Model, view: View = DEFAULT_VIEW): Analysis {
   const findings = model.findings.filter((f) => matches(f, view));
   const current = flow(findings, CURRENT.from, CURRENT.to);
   const previous = flow(findings, PREVIOUS.from, PREVIOUS.to);

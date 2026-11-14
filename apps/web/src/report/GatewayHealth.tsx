@@ -79,7 +79,7 @@ export function GatewayHealth() {
         ))}
       </ul>
       <p className="muted" style={{ fontSize: 13 }}>
-        Policy {health.policyVersion}. Aggregates only: no network, organisation, browser or per-visit detail is published.
+        Policy {health.policyVersion}. Aggregates only: no network, organization, browser or per-visit detail is published.
       </p>
     </div>
   );

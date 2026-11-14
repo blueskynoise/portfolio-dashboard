@@ -22,7 +22,7 @@ export interface IpInputs {
   header: (name: string) => string | undefined;
 }
 
-const normalise = (value: string | undefined): string | null => {
+const normalize = (value: string | undefined): string | null => {
   if (!value) return null;
   let candidate = value.trim();
   if (candidate.startsWith('::ffff:') && isIP(candidate.slice(7)) === 4) candidate = candidate.slice(7);
@@ -31,11 +31,11 @@ const normalise = (value: string | undefined): string | null => {
 
 export function resolveClientIp(source: ClientIpSource, hops: number, inputs: IpInputs): ResolvedIp {
   if (source === 'socket') {
-    return { ip: normalise(inputs.socketAddress), method: 'TCP peer address (no proxy trusted)' };
+    return { ip: normalize(inputs.socketAddress), method: 'TCP peer address (no proxy trusted)' };
   }
   if (source === 'x-real-ip') {
     // Set by the platform edge. Anything the client sent under this name is overwritten there.
-    return { ip: normalise(inputs.header('x-real-ip')), method: 'X-Real-IP set by the platform edge' };
+    return { ip: normalize(inputs.header('x-real-ip')), method: 'X-Real-IP set by the platform edge' };
   }
   // X-Forwarded-For is appended to by each proxy. A client can pre-fill the
   // left-hand side with anything, so only the entries written by proxies we
@@ -43,7 +43,7 @@ export function resolveClientIp(source: ClientIpSource, hops: number, inputs: Ip
   const chain = (inputs.header('x-forwarded-for') ?? '').split(',').map((part) => part.trim()).filter(Boolean);
   const candidate = chain[chain.length - hops];
   return {
-    ip: normalise(candidate),
+    ip: normalize(candidate),
     method: `X-Forwarded-For, ${hops} trusted ${hops === 1 ? 'hop' : 'hops'} from the right`,
   };
 }

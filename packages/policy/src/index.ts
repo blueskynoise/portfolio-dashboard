@@ -12,7 +12,7 @@ import type { Assurance, Decision, PolicyDocument, PolicyReason, RuleEvaluation 
  * sophisticated and explain less.
  */
 
-export const POLICY_VERSION = '2026.11.1';
+export const POLICY_VERSION = '2026.11.2';
 
 export const THRESHOLDS = {
   /** Assessment requests from one address inside the rate window before we stop evaluating. */
@@ -128,7 +128,7 @@ export const RULES: readonly Rule[] = [
     code: 'HOSTING_NETWORK_UNVERIFIED',
     effect: 'CHALLENGE',
     description: 'The connection comes from a hosting or cloud network and bot verification has not passed.',
-    rationale: 'People rarely browse from datacentres; scrapers usually do. Passing verification clears it, so cloud desktops and corporate egress still get in.',
+    rationale: 'People rarely browse from datacenters; scrapers usually do. Passing verification clears it, so cloud desktops and corporate egress still get in.',
     evidence: ['network.hosting', 'automation.bot_verification'],
     test: (f) => whenKnown(f.hostingNetwork, (hosting) => hosting && unverified(f)),
     summary: () => 'The originating network is classified as hosting infrastructure and the browser is unverified.',
@@ -282,7 +282,7 @@ function collectNotes(facts: PolicyFacts): PolicyReason[] {
   const notes: PolicyReason[] = [];
   if (facts.torExit === true) {
     notes.push({
-      code: 'TOR_EXIT_NOT_PENALISED',
+      code: 'TOR_EXIT_NOT_PENALIZED',
       effect: 'NOTE',
       summary: 'The connection arrives through a Tor exit relay. Using Tor is not a policy violation here and did not affect the decision.',
       evidence: ['network.tor_exit'],
@@ -313,7 +313,7 @@ export const POLICY_DOCUMENT: PolicyDocument = {
     'Access policy for a public portfolio. ALLOW is the expected outcome. DENY exists only for abuse control, and CHALLENGE only asks for bot verification.',
   thresholds: { ...THRESHOLDS },
   rules: RULES.map(({ code, effect, description, rationale }) => ({ code, effect, description, rationale })),
-  notPenalised: [
+  notPenalized: [
     'Using a VPN, a corporate proxy or Tor.',
     'Blocking trackers, third-party cookies or client hints.',
     'An uncommon browser or operating system.',

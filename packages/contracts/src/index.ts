@@ -212,7 +212,7 @@ export interface Inconsistency {
   reading: string;
 }
 
-export type RecognitionStatus = 'recognised' | 'probable' | 'possible' | 'similar' | 'new';
+export type RecognitionStatus = 'recognized' | 'probable' | 'possible' | 'similar' | 'new';
 
 export interface Recognition {
   status: RecognitionStatus;
@@ -248,7 +248,7 @@ export interface PolicyDocument {
   summary: string;
   thresholds: Record<string, number>;
   rules: { code: string; effect: Decision; description: string; rationale: string }[];
-  notPenalised: string[];
+  notPenalized: string[];
   failurePolicy: string[];
 }
 
@@ -310,8 +310,8 @@ export interface AdminOverview {
   /** Share of admitted visitors who opted in to the fingerprint. */
   fingerprintOptIn: { admitted: number; optedIn: number };
   recognition: Distribution[];
-  /** Organisation-level attribution only. Never individuals. */
-  organisations: { name: string; type: string; visits: number; lastSeen: string }[];
+  /** Organization-level attribution only. Never individuals. */
+  organizations: { name: string; type: string; visits: number; lastSeen: string }[];
   findings: HealthFinding[];
 }
 
@@ -323,7 +323,7 @@ export interface AdminAssessmentRow {
   policyVersion: string;
   reasonCodes: string[];
   network: string;
-  organisation: string | null;
+  organization: string | null;
   country: string | null;
   browser: string;
   botStatus: string;
@@ -339,7 +339,7 @@ export interface AdminAssessmentRow {
  * With little traffic even an aggregate can describe one person ("one
  * evaluation today, challenged"). So nothing about outcomes is published
  * until the window holds a minimum number of evaluations, and counts are
- * rounded down. Nothing here is broken out by network, organisation,
+ * rounded down. Nothing here is broken out by network, organization,
  * browser or time of day.
  */
 export interface PublicHealth {

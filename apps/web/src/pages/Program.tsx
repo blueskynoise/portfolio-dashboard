@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import {
   AUTOMATION_DAY,
-  analyse,
+  analyze,
   buildModel,
   coverageSeries,
   CURRENT,
@@ -37,9 +37,9 @@ const KIND_LABEL: Record<Statement['kind'], string> = { computed: 'Computed', ex
 const KIND_CLASS: Record<Statement['kind'], string> = { computed: 'chip-good', explanation: 'chip-info', hypothesis: 'chip-warn', caveat: '' };
 const OWNERSHIP_LABEL: Record<Ownership, string> = { verified: 'Verified owner', stale: 'Out-of-date owner', missing: 'No owner on record', unreconciled: 'Not tied to a service' };
 const OWNERSHIP_HELP: Record<Ownership, string> = {
-  verified: 'Tagged to a service whose catalogue entry names the team that owns it today.',
-  stale: 'The catalogue names a team that no longer owns the service.',
-  missing: 'Tagged to a service, but the catalogue has no owner for it.',
+  verified: 'Tagged to a service whose catalog entry names the team that owns it today.',
+  stale: 'The catalog names a team that no longer owns the service.',
+  missing: 'Tagged to a service, but the catalog has no owner for it.',
   unreconciled: 'No service tag, so there is nothing to look an owner up by.',
 };
 
@@ -93,11 +93,11 @@ function FindingDetail({ finding, model }: { finding: Finding; model: Model }) {
           <li>
             {finding.service ? (
               <>
-                Service catalogue entry <code>{finding.service}</code>: owner <code>{service?.owner ?? 'none'}</code>
+                Service catalog entry <code>{finding.service}</code>: owner <code>{service?.owner ?? 'none'}</code>
                 {service?.owner ? (service.ownerCurrent ? ', current' : ', no longer current') : ''}
               </>
             ) : (
-              'No service tag, so the catalogue cannot be consulted.'
+              'No service tag, so the catalog cannot be consulted.'
             )}
           </li>
           <li>
@@ -153,10 +153,10 @@ const SOURCE_ROWS: IngestRun['source'][] = ['cloud_scanner', 'dependency_scanner
 
 const CONCERNS: { concern: string; handling: string; where: string }[] = [
   { concern: 'Zero-result responses', handling: 'A run far below recent volume is quarantined. Nothing is closed on the strength of an empty answer.', where: 'packages/analytics · pipeline.ts assessRun()' },
-  { concern: 'Authentication failures', handling: 'State is held at the last good sync, the weeks are marked, and figures for them are labelled as reconstructed.', where: 'This dataset: dependency scanner, weeks 20–21' },
+  { concern: 'Authentication failures', handling: 'State is held at the last good sync, the weeks are marked, and figures for them are labeled as reconstructed.', where: 'This dataset: dependency scanner, weeks 20–21' },
   { concern: 'Missed windows and backfill', handling: 'The next good run re-reads from the saved position, and the affected weeks stay flagged.', where: 'This dataset: week 22' },
   { concern: 'Duplicate detection', handling: 'Two scanners reporting one vulnerability on one asset is one finding with two witnesses.', where: 'pipeline.ts mergeBySameFinding()' },
-  { concern: 'Asset identity correlation', handling: 'Each source’s naming is normalised to one key. A finding on an asset the inventory does not know is set aside, not guessed at.', where: 'pipeline.ts normalise*(), buildModel()' },
+  { concern: 'Asset identity correlation', handling: 'Each source’s naming is normalized to one key. A finding on an asset the inventory does not know is set aside, not guessed at.', where: 'pipeline.ts normalize*(), buildModel()' },
   { concern: 'Incomplete ownership records', handling: 'Four distinct states, kept distinct through every metric. "Unknown owner" is never rolled into a default team.', where: 'pipeline.ts resolveOwnership()' },
   { concern: 'False success', handling: 'A 200 response that cannot be parsed or has the wrong shape is recorded as a failure.', where: 'apps/api · http.ts, providers/*' },
   { concern: 'Rate limits, retries and timeouts', handling: 'Every outbound call has a deadline, a bounded retry, a daily budget and a cache. These run for real in the access gateway.', where: 'apps/api · http.ts, providers/budget.ts' },
@@ -195,7 +195,7 @@ function Engineering({ model }: { model: Model }) {
               <b>Source systems</b>
               <span>
                 {n(quality.recordsIn.cloud)} cloud scanner issues · {n(quality.recordsIn.dependency)} dependency scanner issues · {n(sources.inventory.length)} inventory
-                assets · {sources.catalog.length} catalogue services · {n(sources.tickets.length)} tickets
+                assets · {sources.catalog.length} catalog services · {n(sources.tickets.length)} tickets
               </span>
             </li>
             <li>
@@ -205,7 +205,7 @@ function Engineering({ model }: { model: Model }) {
               </span>
             </li>
             <li>
-              <b>Normalise</b>
+              <b>Normalize</b>
               <span>Two dialects into one vocabulary: asset key, vulnerability id, severity band, day numbers.</span>
             </li>
             <li>
@@ -309,7 +309,7 @@ function Engineering({ model }: { model: Model }) {
           <CoverageChart points={coverage} />
           <p className="muted" style={{ fontSize: 14 }}>
             The denominator is the inventory of accounts in scope that week, so bringing new accounts in does not look like a drop. The dips are
-            real: accounts mid-enrolment, and a scanner outage in weeks 21–22.
+            real: accounts mid-enrollment, and a scanner outage in weeks 21–22.
           </p>
         </div>
       )}
@@ -361,8 +361,8 @@ never an exposure`}</pre>
           <figure>
             <figcaption>Ownership</figcaption>
             <pre tabIndex={0}>{`no service tag                -> unreconciled
-tag not in catalogue          -> unreconciled
-catalogue has no owner        -> missing
+tag not in catalog          -> unreconciled
+catalog has no owner        -> missing
 owner listed, not current     -> stale
 owner listed and current      -> verified
 
@@ -412,7 +412,7 @@ carries a review date`}</pre>
                 ['Overdue share by ownership', 'Finding ownership state + age', 'Overdue ÷ open, within each ownership state.'],
                 ['Re-routing rate', 'Ticket assignment history', 'Tickets with more than one assignment ÷ tickets for assets with an owner on record.'],
                 ['Scan coverage', 'Coverage records', 'Assets scanned ÷ inventory assets in accounts in scope that week.'],
-                ['Verified ownership', 'Inventory tags + service catalogue', 'Assets with a verified owner ÷ all inventory assets.'],
+                ['Verified ownership', 'Inventory tags + service catalog', 'Assets with a verified owner ÷ all inventory assets.'],
               ].map(([metric, from, definition]) => (
                 <tr key={metric}>
                   <th scope="row">{metric}</th>
@@ -468,13 +468,13 @@ function Question({ id, number, question, answer, children }: { id: string; numb
 }
 
 export function Program() {
-  useDocumentTitle(`Is the programme getting worse? — ${profile.name}`);
+  useDocumentTitle(`Is the program getting worse? — ${profile.name}`);
   const model = useMemo(() => buildModel(generateSources()), []);
   const [view, setView] = useState<View>(DEFAULT_VIEW);
   const [openFinding, setOpenFinding] = useState<string | null>(null);
-  const analysis = useMemo(() => analyse(model, view), [model, view]);
+  const analysis = useMemo(() => analyze(model, view), [model, view]);
   const story = useMemo(() => tell(model, analysis), [model, analysis]);
-  const headline = useMemo(() => analyse(model, DEFAULT_VIEW), [model]);
+  const headline = useMemo(() => analyze(model, DEFAULT_VIEW), [model]);
   const coverage = useMemo(() => ownershipCoverage(model), [model]);
   const set = (patch: Partial<View>): void => {
     // Functional update, so two changes in quick succession both apply.
@@ -490,10 +490,10 @@ export function Program() {
     <>
       <main id="main" tabIndex={-1} className="program">
         <header className="wrap program-hero enter">
-          <p className="eyebrow">Security programme intelligence · interactive case study</p>
+          <p className="eyebrow">Security program intelligence · interactive case study</p>
           <h1 className="display">
             “Our critical vulnerability backlog grew {Math.round((headline.backlogChange ?? 0) * 100)}% this quarter.{' '}
-            <em className="mark">Is the programme getting worse?”</em>
+            <em className="mark">Is the program getting worse?”</em>
           </h1>
           <p className="lede">The answer is in the data under the chart. Change the view and every figure, chart and sentence below is recomputed.</p>
           <p className="synthetic">

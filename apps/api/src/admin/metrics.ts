@@ -121,14 +121,14 @@ export function computeOverview(input: OverviewInput): AdminOverview {
   ).length;
   const staleEnrichmentDecisions = assessments.filter((a) => (a.maxEnrichmentAgeSeconds ?? 0) > TOR_STALE_AFTER_SECONDS).length;
 
-  const organisations = new Map<string, { name: string; type: string; visits: number; lastSeen: string }>();
+  const organizations = new Map<string, { name: string; type: string; visits: number; lastSeen: string }>();
   for (const a of assessments) {
-    // Internet providers and hosts are not "who visited"; only ranges registered to an organisation are listed.
+    // Internet providers and hosts are not "who visited"; only ranges registered to an organization are listed.
     if (!a.orgName || a.orgType === 'isp' || a.orgType === 'hosting') continue;
-    const row = organisations.get(a.orgName) ?? { name: a.orgName, type: a.orgType ?? 'unknown', visits: 0, lastSeen: a.createdAt.toISOString() };
+    const row = organizations.get(a.orgName) ?? { name: a.orgName, type: a.orgType ?? 'unknown', visits: 0, lastSeen: a.createdAt.toISOString() };
     row.visits++;
     if (a.createdAt.toISOString() > row.lastSeen) row.lastSeen = a.createdAt.toISOString();
-    organisations.set(a.orgName, row);
+    organizations.set(a.orgName, row);
   }
 
   const providers = providerHealth(calls);
@@ -153,7 +153,7 @@ export function computeOverview(input: OverviewInput): AdminOverview {
     investigations: { open: investigations.filter((i) => i.status === 'open').length, total: investigations.length },
     fingerprintOptIn: { admitted, optedIn: fingerprints.length },
     recognition: distribution(fingerprints, (f) => f.recognition),
-    organisations: [...organisations.values()].sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name)).slice(0, 50),
+    organizations: [...organizations.values()].sort((a, b) => b.visits - a.visits || a.name.localeCompare(b.name)).slice(0, 50),
     findings: [],
   };
   overview.findings = deriveFindings(overview);
@@ -190,7 +190,7 @@ export function deriveFindings(o: AdminOverview): HealthFinding[] {
   for (const b of o.browserImpact) {
     // Flag only with enough volume to mean something, and only when clearly above the overall rate.
     if (b.total >= 10 && b.rate > Math.max(0.25, overallRate * 2)) {
-      findings.push({ severity: 'watch', title: `${b.browser} is challenged or denied ${pct(b.rate)} of the time`, detail: `Against ${pct(overallRate)} overall (${b.nonAllow} of ${b.total}). Worth checking whether a rule is penalising the browser rather than the behaviour.` });
+      findings.push({ severity: 'watch', title: `${b.browser} is challenged or denied ${pct(b.rate)} of the time`, detail: `Against ${pct(overallRate)} overall (${b.nonAllow} of ${b.total}). Worth checking whether a rule is penalizing the browser rather than the behavior.` });
     }
   }
   const weakest = o.signalAvailability.find((s) => s.total >= 5 && s.rate < 0.5);

@@ -33,11 +33,11 @@ this change.
   narrative sentence keeps its Computed / Explanation / Hypothesis / Caveat tag. They are folded, never removed.
 - **Fingerprinting.** Still opt-in, still deletable, still not part of the access decision.
 - **The policy.** Same rules, same version, still a pure function, still no numeric score. The scorecard on the Program
-  page shows measurements of the synthetic programme; it is not a risk score.
-- **The synthetic dataset and its labelling.** Same seed and figures. The "synthetic data" notice stays at the top of the
-  case study, and the Home teaser is labelled as synthetic.
+  page shows measurements of the synthetic program; it is not a risk score.
+- **The synthetic dataset and its labeling.** Same seed and figures. The "synthetic data" notice stays at the top of the
+  case study, and the Home teaser is labeled as synthetic.
 - **Credentials.** No employer, date, headcount or metric was added. The credential strip restates the career path and
   tools the owner supplied, and facts about this site.
 - **Projects.** No project was added or re-described as a security tool. The framing says plainly that none of them is one.
-- **Theme and fonts.** Existing light tokens, Geist and Geist Mono. No new colours were introduced.
+- **Theme and fonts.** Existing light tokens, Geist and Geist Mono. No new colors were introduced.
 - **Admin analytics.** Unchanged apart from sharing its aggregation code with the public health summary.

@@ -82,7 +82,7 @@ export async function harness(options: HarnessOptions = {}): Promise<Harness> {
     world.calls.push(url);
     const pick = url.includes('ipapi.is') ? world.ipapi : url.includes('ipinfo.io') ? world.ipinfo : url.includes('abuseipdb') ? world.abuse : url.includes('turnstile') ? world.turnstile : url === TOR_LIST_URL ? world.tor : null;
     if (!pick) throw new Error(`unexpected outbound request to ${url}`);
-    // Honour the abort signal the way real fetch does, so timeouts can be tested.
+    // Honor the abort signal the way real fetch does, so timeouts can be tested.
     return await Promise.race([
       Promise.resolve(pick(url, init)),
       new Promise<Response>((_, reject) => init?.signal?.addEventListener('abort', () => reject(new Error('aborted')))),

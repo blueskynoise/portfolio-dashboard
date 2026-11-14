@@ -5,8 +5,8 @@ Mark Graziano's portfolio. It is also three working systems:
 1. **A live access gateway.** Every visit is evaluated before the site loads: the connection is enriched from real
    providers, a versioned policy decides ALLOW / CHALLENGE / DENY, and the server issues a session. The visitor is then shown
    everything that was learned about their own connection, with provenance for each signal.
-2. **A security-programme case study.** An interactive investigation of a synthetic company's vulnerability backlog, built on
-   a real pipeline (normalise, deduplicate, correlate, attach ownership) and a narrative engine that separates what was
+2. **A security-program case study.** An interactive investigation of a synthetic company's vulnerability backlog, built on
+   a real pipeline (normalize, deduplicate, correlate, attach ownership) and a narrative engine that separates what was
    computed from what is only suspected.
 3. **Operational analytics for the gateway itself**, behind an admin login, answering "is the evaluation doing its job?"
 
@@ -60,7 +60,7 @@ See `.env.example`. In production the server refuses to start without `SESSION_S
 | Provider | What it adds | Cost | Variable |
 | --- | --- | --- | --- |
 | Cloudflare Turnstile | Server-validated bot verification | Free | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` |
-| ipapi.is | Organisation, network type, coarse location, VPN/proxy/datacentre flags | Free, 1,000/day | `IPAPI_IS_KEY` |
+| ipapi.is | Organization, network type, coarse location, VPN/proxy/datacenter flags | Free, 1,000/day | `IPAPI_IS_KEY` |
 | IPinfo Lite | Second opinion on network operator and country | Free, unlimited | `IPINFO_TOKEN` |
 | Tor Project exit list | Tor exit membership | Free, no key | none |
 | AbuseIPDB | Abuse reports about an address | Free, 1,000/day | `ABUSEIPDB_API_KEY` |

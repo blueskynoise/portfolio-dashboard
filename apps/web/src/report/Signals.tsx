@@ -135,7 +135,7 @@ export function SignalList({ signals }: { signals: Signal[] }) {
 }
 
 /** One sentence built only from what was actually established. */
-export function summarise(signals: Signal[]): string {
+export function summarize(signals: Signal[]): string {
   const value = (key: string): string | null => {
     const s = signals.find((x) => x.key === key);
     return s && s.value !== null && s.kind !== 'gap' ? String(s.value) : null;

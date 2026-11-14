@@ -12,7 +12,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 export interface TokenPayload {
   /** Session id, or "admin" for the administrative cookie. */
   sid: string;
-  /** Assessment id that authorised this session. */
+  /** Assessment id that authorized this session. */
   aid: string;
   /** Expiry, seconds since the epoch. */
   exp: number;

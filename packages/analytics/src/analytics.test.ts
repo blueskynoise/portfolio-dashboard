@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { generateSources } from './generate';
-import { analyse, coverageSeries, DEFAULT_VIEW, matches, openAt, type View } from './metrics';
+import { analyze, coverageSeries, DEFAULT_VIEW, matches, openAt, type View } from './metrics';
 import { assignment, flow, median, sla } from './metrics';
 import { CURRENT, END_DAY, PREVIOUS, dayToIso, type CloudIssue, type DependencyIssue, type Finding, type Model, type Sources } from './model';
 import { ownershipCoverage, tell } from './narrative';
-import { assessRun, buildModel, mergeBySameFinding, normaliseCloud, normaliseDependency, resolveOwnership, unreliableWeeks } from './pipeline';
+import { assessRun, buildModel, mergeBySameFinding, normalizeCloud, normalizeDependency, resolveOwnership, unreliableWeeks } from './pipeline';
 
 const sources = generateSources();
 const model = buildModel(sources);
@@ -51,11 +51,11 @@ describe('collection health', () => {
   });
 });
 
-describe('normalisation', () => {
+describe('normalization', () => {
   it('maps two dialects onto the same finding', () => {
-    const a = normaliseCloud(cloud());
-    const b = normaliseDependency(dependency());
-    if (!a.ok || !b.ok) throw new Error('expected both to normalise');
+    const a = normalizeCloud(cloud());
+    const b = normalizeDependency(dependency());
+    if (!a.ok || !b.ok) throw new Error('expected both to normalize');
     expect([a.record.account, a.record.assetName, a.record.vulnId]).toEqual(['prod-core', 'checkout-vm-01', 'SYN-2026-0001']);
     expect([b.record.account, b.record.assetName, b.record.vulnId]).toEqual(['prod-core', 'checkout-vm-01', 'SYN-2026-0001']);
     expect([a.record.severity, b.record.severity]).toEqual(['high', 'critical']);
@@ -63,17 +63,17 @@ describe('normalisation', () => {
   });
 
   it('rejects what it cannot read, with a reason', () => {
-    expect(normaliseCloud(cloud({ severity: 'SPICY' as never }))).toMatchObject({ ok: false, reason: expect.stringMatching(/severity/) });
-    expect(normaliseCloud(cloud({ firstDetectedAt: 'yesterday-ish' }))).toMatchObject({ ok: false });
-    expect(normaliseDependency(dependency({ project: 'no-separator' }))).toMatchObject({ ok: false });
-    expect(normaliseDependency(dependency({ cvss: 42 }))).toMatchObject({ ok: false });
+    expect(normalizeCloud(cloud({ severity: 'SPICY' as never }))).toMatchObject({ ok: false, reason: expect.stringMatching(/severity/) });
+    expect(normalizeCloud(cloud({ firstDetectedAt: 'yesterday-ish' }))).toMatchObject({ ok: false });
+    expect(normalizeDependency(dependency({ project: 'no-separator' }))).toMatchObject({ ok: false });
+    expect(normalizeDependency(dependency({ cvss: 42 }))).toMatchObject({ ok: false });
   });
 });
 
 describe('deduplication across scanners', () => {
   const pair = (c: Partial<CloudIssue>, d: Partial<DependencyIssue>) => {
-    const a = normaliseCloud(cloud(c));
-    const b = normaliseDependency(dependency(d));
+    const a = normalizeCloud(cloud(c));
+    const b = normalizeDependency(dependency(d));
     if (!a.ok || !b.ok) throw new Error('fixture');
     return mergeBySameFinding([a.record, b.record]);
   };
@@ -94,9 +94,9 @@ describe('deduplication across scanners', () => {
   });
 
   it('does not merge different vulnerabilities or different assets', () => {
-    const a = normaliseCloud(cloud());
-    const b = normaliseCloud(cloud({ id: 'ci-2', rule: 'SYN-2026-0002' }));
-    const c = normaliseCloud(cloud({ id: 'ci-3', resource: { account: 'prod-core', name: 'checkout-vm-02' } }));
+    const a = normalizeCloud(cloud());
+    const b = normalizeCloud(cloud({ id: 'ci-2', rule: 'SYN-2026-0002' }));
+    const c = normalizeCloud(cloud({ id: 'ci-3', resource: { account: 'prod-core', name: 'checkout-vm-02' } }));
     if (!a.ok || !b.ok || !c.ok) throw new Error('fixture');
     expect(mergeBySameFinding([a.record, b.record, c.record])).toMatchObject({ duplicates: 0, merged: { length: 3 } });
   });
@@ -114,11 +114,11 @@ describe('ownership', () => {
     expect(resolveOwnership('wiki', catalog)).toMatchObject({ ownership: 'stale', team: 'Internal Tools' });
     expect(resolveOwnership('queue', catalog)).toMatchObject({ ownership: 'missing', team: null });
     expect(resolveOwnership(undefined, catalog)).toMatchObject({ ownership: 'unreconciled', team: null });
-    // A tag naming a service the catalogue has never heard of is no better than no tag.
+    // A tag naming a service the catalog has never heard of is no better than no tag.
     expect(resolveOwnership('ghost', catalog)).toMatchObject({ ownership: 'unreconciled' });
   });
 
-  it('follows an ownership change in the catalogue', () => {
+  it('follows an ownership change in the catalog', () => {
     const base = tinySources({ cloudIssues: [cloud()] });
     expect(buildModel(base).findings[0]).toMatchObject({ ownership: 'verified', team: 'Payments' });
     const moved = buildModel({ ...base, catalog: [{ name: 'checkout', tier: 1, owner: 'Payments', ownerCurrent: false }] });
@@ -145,7 +145,7 @@ describe('building the model', () => {
     const f = result.findings[0] as Finding;
     expect(f.closedAs).toBe('risk_accepted');
     expect(f.intervals).toEqual([{ from: 10, to: 100 }]);
-    const a = analyse(result, view({ severity: 'all' }));
+    const a = analyze(result, view({ severity: 'all' }));
     expect(a.current).toMatchObject({ riskAccepted: 1, remediated: 0 });
     // Not met: accepting a risk is a different outcome from fixing by the deadline.
     expect(sla(result.findings, CURRENT.from, CURRENT.to)).toMatchObject({ due: 1, met: 0 });
@@ -172,7 +172,7 @@ describe('building the model', () => {
     expect(generateSources({ seed: 5, scale: 0.2 }).cloudIssues).not.toEqual(generateSources({ seed: 6, scale: 0.2 }).cloudIssues);
   });
 
-  it('loses nothing: every source record is merged, modelled or rejected', () => {
+  it('loses nothing: every source record is merged, modeled or rejected', () => {
     const { quality, findings } = model;
     expect(findings.length + quality.duplicatesMerged + quality.rejected.length).toBe(quality.recordsIn.cloud + quality.recordsIn.dependency);
     expect(quality.duplicatesMerged).toBeGreaterThan(0);
@@ -222,7 +222,7 @@ describe('the whole dataset is internally consistent', () => {
 
   it('accounts for every change in the backlog, in every view', () => {
     for (const v of views) {
-      const a = analyse(model, v);
+      const a = analyze(model, v);
       for (const f of [a.current, a.previous, a.stable.current]) {
         expect(f.start + f.discoveredInNewScope + f.newInExistingScope + f.reopened - f.remediated - f.riskAccepted, JSON.stringify(v)).toBe(f.end);
       }
@@ -232,7 +232,7 @@ describe('the whole dataset is internally consistent', () => {
 
   it('the weekly series lands on the quarter figures and its flows add up to them', () => {
     for (const v of views) {
-      const a = analyse(model, v);
+      const a = analyze(model, v);
       const thisQuarter = a.series.filter((p) => p.week * 7 > CURRENT.from);
       expect(a.series.at(-1)?.open).toBe(a.current.end);
       expect(a.series.find((p) => p.week * 7 === CURRENT.from)?.open).toBe(a.current.start);
@@ -243,9 +243,9 @@ describe('the whole dataset is internally consistent', () => {
   });
 
   it('cohorts, teams, ownership groups and age buckets each partition the same total', () => {
-    const all = analyse(model, view({ severity: 'all' }));
-    const stable = analyse(model, view({ severity: 'all', cohort: 'stable' }));
-    const fresh = analyse(model, view({ severity: 'all', cohort: 'new' }));
+    const all = analyze(model, view({ severity: 'all' }));
+    const stable = analyze(model, view({ severity: 'all', cohort: 'stable' }));
+    const fresh = analyze(model, view({ severity: 'all', cohort: 'new' }));
     expect(stable.current.end + fresh.current.end).toBe(all.current.end);
     expect(stable.current.remediated + fresh.current.remediated).toBe(all.current.remediated);
     expect(all.stable.current).toEqual(stable.current);
@@ -258,13 +258,13 @@ describe('the whole dataset is internally consistent', () => {
     const noTeam = model.findings.filter((f) => f.team === null && openAt(f, END_DAY)).length;
     expect(all.teams.reduce((sum, t) => sum + t.open, 0) + noTeam).toBe(all.current.end);
 
-    const bySeverity = (['critical', 'critical_high', 'all'] as const).map((severity) => analyse(model, view({ severity })).current.end);
+    const bySeverity = (['critical', 'critical_high', 'all'] as const).map((severity) => analyze(model, view({ severity })).current.end);
     expect(bySeverity[0]).toBeLessThan(bySeverity[1] as number);
     expect(bySeverity[1]).toBeLessThan(bySeverity[2] as number);
   });
 
   it('newly onboarded accounts contribute nothing before they were scanned', () => {
-    const fresh = analyse(model, view({ severity: 'all', cohort: 'new' }));
+    const fresh = analyze(model, view({ severity: 'all', cohort: 'new' }));
     expect(fresh.previous).toMatchObject({ start: 0, end: 0, remediated: 0 });
     expect(fresh.current.start).toBe(0);
     expect(fresh.backlogChange).toBeNull();
@@ -272,8 +272,8 @@ describe('the whole dataset is internally consistent', () => {
   });
 
   it('a filter only ever narrows', () => {
-    const all = analyse(model, view({ severity: 'all' })).matched;
-    for (const v of views) expect(analyse(model, v).matched).toBeLessThanOrEqual(all);
+    const all = analyze(model, view({ severity: 'all' })).matched;
+    for (const v of views) expect(analyze(model, v).matched).toBeLessThanOrEqual(all);
     expect(model.findings.filter((f) => matches(f, view({ team: 'Data', severity: 'all' }))).every((f) => f.team === 'Data')).toBe(true);
   });
 
@@ -290,10 +290,10 @@ describe('the whole dataset is internally consistent', () => {
 });
 
 describe('the narrative says what the numbers say', () => {
-  const story = (m: Model, v: View = view()) => tell(m, analyse(m, v));
+  const story = (m: Model, v: View = view()) => tell(m, analyze(m, v));
 
   it('reads the default view as expanded visibility, and quotes the computed figures', () => {
-    const a = analyse(model, view());
+    const a = analyze(model, view());
     const s = story(model);
     expect(s.verdict).toBe('scope_expansion');
     expect(Math.round((a.backlogChange as number) * 100)).toBe(24);

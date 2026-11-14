@@ -18,7 +18,7 @@ const flag = (value: unknown): boolean | undefined => (typeof value === 'boolean
 const hash = (value: unknown): string | undefined => (typeof value === 'string' && /^[A-Za-z0-9_-]{6,128}$/.test(value) ? value : undefined);
 
 /** Returns null when the submission is not usable at all. */
-export function sanitiseSubmission(raw: unknown): FingerprintSubmission | null {
+export function sanitizeSubmission(raw: unknown): FingerprintSubmission | null {
   if (!raw || typeof raw !== 'object') return null;
   const input = raw as Record<string, unknown>;
   const libraryHash = hash(input.libraryHash);
@@ -104,7 +104,7 @@ export function buildFingerprintSignals(fp: FingerprintSubmission, fingerprintsO
     'claim',
     'medium',
     'WebGL exposes the name of the graphics card and driver to any page that asks.',
-    `Often names the exact chip, which narrows the device model considerably. Firefox and Safari generalise it; Brave and Tor Browser hide it.${fp.webglRenderer && SOFTWARE_RENDERERS.test(fp.webglRenderer) ? ' This one is a software renderer, typical of virtual machines and headless browsers.' : ''}`,
+    `Often names the exact chip, which narrows the device model considerably. Firefox and Safari generalize it; Brave and Tor Browser hide it.${fp.webglRenderer && SOFTWARE_RENDERERS.test(fp.webglRenderer) ? ' This one is a software renderer, typical of virtual machines and headless browsers.' : ''}`,
   );
   add(
     'fingerprint.canvas',
@@ -123,7 +123,7 @@ export function buildFingerprintSignals(fp: FingerprintSubmission, fingerprintsO
     'fact',
     'medium',
     'The page generates a silent tone through the audio stack and hashes the output. Nothing is recorded and nothing plays.',
-    'Differs by audio hardware and browser engine. Safari 17+ and Brave randomise it.',
+    'Differs by audio hardware and browser engine. Safari 17+ and Brave randomize it.',
   );
   add(
     'fingerprint.fonts',
@@ -168,7 +168,7 @@ export function buildFingerprintSignals(fp: FingerprintSubmission, fingerprintsO
   add(
     'fingerprint.preferences',
     'Display preferences',
-    [present(fp.prefersDark) ? (fp.prefersDark ? 'dark mode' : 'light mode') : null, fp.prefersReducedMotion ? 'reduced motion' : null, fp.colorGamut ? `${fp.colorGamut} colour` : null].filter(Boolean).join(', ') || undefined,
+    [present(fp.prefersDark) ? (fp.prefersDark ? 'dark mode' : 'light mode') : null, fp.prefersReducedMotion ? 'reduced motion' : null, fp.colorGamut ? `${fp.colorGamut} color` : null].filter(Boolean).join(', ') || undefined,
     'claim',
     'low',
     'CSS media queries, readable from script.',

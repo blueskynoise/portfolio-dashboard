@@ -25,8 +25,8 @@ import { between, createRng, pick, poisson, weighted, type Rng } from './rng';
  * downstream reads the simulation's internals: the analysis only ever sees
  * the exported tables, exactly as a real pipeline would.
  *
- * The behaviours below are assumptions chosen to be plausible, not
- * measurements of any real organisation.
+ * The behaviors below are assumptions chosen to be plausible, not
+ * measurements of any real organization.
  */
 
 const TEAMS = ['Payments', 'Identity', 'Platform', 'Data', 'Storefront', 'Growth', 'Mobile', 'Internal Tools'] as const;
@@ -107,7 +107,7 @@ export function generateSources(options: GenerateOptions = {}): Sources {
   const scale = options.scale ?? 1;
   const rng = createRng(seed);
 
-  // ── Service catalogue ───────────────────────────────────────────────
+  // ── Service catalog ───────────────────────────────────────────────
   const catalog: CatalogService[] = SERVICE_STEMS.map((stem) => {
     const quality = weighted(rng, [['verified', 78], ['stale', 10], ['missing', 12]] as const);
     return {
@@ -140,7 +140,7 @@ export function generateSources(options: GenerateOptions = {}): Sources {
   }
   const accountByName = new Map(ACCOUNTS.map((a) => [a.name, a]));
 
-  // ── Vulnerability catalogue ─────────────────────────────────────────
+  // ── Vulnerability catalog ─────────────────────────────────────────
   const vulns: Vuln[] = Array.from({ length: 140 }, (_, i) => {
     const severity = weighted(rng, SEVERITY_WEIGHTS);
     const [lo, hi] = CVSS_RANGE[severity];
@@ -175,7 +175,7 @@ export function generateSources(options: GenerateOptions = {}): Sources {
       sim.routedBy = automated ? 'automation' : 'manual';
       sim.ticketDay = detected + (automated ? between(rng, 0, 1) : between(rng, 4, 18));
       sim.assignments.push({ team: service.owner, day: sim.ticketDay });
-      // Even with a correct catalogue entry, a ticket can land in the wrong queue. A person triaging by hand
+      // Even with a correct catalog entry, a ticket can land in the wrong queue. A person triaging by hand
       // from a spreadsheet gets it wrong more often than a lookup does.
       if (rng() < (automated ? 0.03 : 0.11)) {
         const again = sim.ticketDay + between(rng, 5, 14);
@@ -184,7 +184,7 @@ export function generateSources(options: GenerateOptions = {}): Sources {
       } else actionableDay = sim.ticketDay;
       ownerTeam = service.owner;
     } else if (service?.owner) {
-      // The catalogue names a team that no longer owns the service. The ticket lands there, sits, and bounces.
+      // The catalog names a team that no longer owns the service. The ticket lands there, sits, and bounces.
       sim.routedBy = automated ? 'automation' : 'manual';
       sim.ticketDay = detected + (automated ? between(rng, 0, 1) : between(rng, 4, 18));
       sim.assignments.push({ team: service.owner, day: sim.ticketDay });
