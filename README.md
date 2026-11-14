@@ -18,7 +18,7 @@ Nothing factual was added that the original site does not already say.
 
 Vite, React 19, TypeScript (strict), Vitest. Plain CSS with custom properties. No UI
 framework, router library, analytics, cookies or third-party requests; fonts are
-self-hosted via `@fontsource`.
+self-hosted (Geist and Geist Mono via `@fontsource`).
 
 ```
 npm install        # see note below
