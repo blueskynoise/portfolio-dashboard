@@ -1,33 +1,30 @@
 {
   "name": "portfolio-dashboard",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "engines": { "node": ">=22" },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build && node scripts/postbuild.mjs",
-    "preview": "vite preview",
+    "dev": "npm run dev:api & npm run dev:web",
+    "dev:web": "npm run dev -w @portfolio/web",
+    "dev:api": "npm run dev -w @portfolio/api",
+    "build": "npm run typecheck && npm run build -w @portfolio/web && npm run build -w @portfolio/api",
+    "start": "node apps/api/dist/server.js",
+    "db:migrate": "node apps/api/dist/migrate.js",
+    "db:up": "docker compose up -d postgres",
+    "admin:hash": "node apps/api/dist/hash-password.js",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "@fontsource-variable/geist": "^5.3.0",
-    "@fontsource-variable/geist-mono": "^5.3.0",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "test:db": "docker compose exec -T postgres psql -U portfolio -d portfolio -tc \"SELECT 1 FROM pg_database WHERE datname = 'portfolio_test'\" | grep -q 1 || docker compose exec -T postgres createdb -U portfolio portfolio_test; TEST_DATABASE_URL=postgres://portfolio:portfolio@localhost:54329/portfolio_test vitest run apps/api/src/store"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.3.0",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.2",
-    "vite": "^8.3.8",
     "vitest": "^5.1.0"
   }
 }

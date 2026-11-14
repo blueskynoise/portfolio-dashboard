@@ -1,0 +1,18 @@
+# Local Postgres for development and for the store integration tests.
+#   npm run db:up
+#   DATABASE_URL=postgres://portfolio:portfolio@localhost:54329/portfolio
+# The integration tests use a separate database, portfolio_test, which they wipe (npm run test:db).
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: portfolio
+      POSTGRES_PASSWORD: portfolio
+      POSTGRES_DB: portfolio
+    ports:
+      - "54329:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio"]
+      interval: 2s
+      timeout: 2s
+      retries: 20

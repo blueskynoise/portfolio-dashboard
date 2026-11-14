@@ -4,3 +4,6 @@ dist
 .idea
 *.local
 coverage
+.env
+.env.*
+!.env.example

@@ -1,103 +1,86 @@
 # portfolio-dashboard
 
-Mark Graziano's portfolio: three product case studies, a professional narrative, and an
-interactive security-engineering simulation.
+Mark Graziano's portfolio. It is also three working systems:
 
-Content is migrated from the existing personal site (`personal-site`, markgraziano.com).
-Nothing factual was added that the original site does not already say.
-
-## What's here
-
-| Route | What it is |
-| --- | --- |
-| `/` | Home: intro, "The World's Most Reasonable SOC", featured work, background, principles |
-| `/work/bivvi`, `/work/txr-studio`, `/work/summa` | Case studies, each with a small interactive sketch of the product's core idea |
-| `/avalanche` | The Great Alert Avalanche: "10,000 alerts. How many actually matter?" |
-
-## Stack
-
-Vite, React 19, TypeScript (strict), Vitest. Plain CSS with custom properties. No UI
-framework, router library, analytics, cookies or third-party requests; fonts are
-self-hosted (Geist and Geist Mono via `@fontsource`).
+1. **A live access gateway.** Every visit is evaluated before the site loads: the connection is enriched from real
+   providers, a versioned policy decides ALLOW / CHALLENGE / DENY, and the server issues a session. The visitor is then shown
+   everything that was learned about their own connection, with provenance for each signal.
+2. **A security-programme case study.** An interactive investigation of a synthetic company's vulnerability backlog, built on
+   a real pipeline (normalise, deduplicate, correlate, attach ownership) and a narrative engine that separates what was
+   computed from what is only suspected.
+3. **Operational analytics for the gateway itself**, behind an admin login, answering "is the evaluation doing its job?"
 
 ```
-npm install        # see note below
-npm run dev        # http://localhost:5173
-npm test           # simulation tests
+apps/
+  api/        Fastify server: gateway, provider adapters, sessions, Postgres store, admin analytics
+  web/        Vite + React: the gate (public) and the portfolio (served only with a session)
+packages/
+  contracts/  Types shared by API and web
+  policy/     The access policy: a pure, versioned function with reason codes
+  analytics/  Synthetic enterprise: generator, pipeline, metrics, narrative
+db/migrations/  Forward-only SQL
+docs/           Architecture, threat model, privacy, providers, deployment, checklist
+```
+
+## Run it locally
+
+Requires Node 22+ and Docker (for Postgres). Use npm 11 or newer to change dependencies; `npm ci` works on older versions.
+
+```bash
+npm ci
+cp .env.example .env          # every provider key is optional
+npm run db:up                 # Postgres on localhost:54329
+npm run build
+npm run db:migrate            # reads DATABASE_URL from the environment
+npm start                     # http://localhost:8787  (node --env-file=.env apps/api/dist/server.js to load .env)
+```
+
+`npm start` serves the built site exactly as production does, with the gate enforced by the server.
+For UI work with hot reload, run `npm run dev` (API on 8787, Vite on 5173). In that mode the Vite server hands out every
+file, so the gate is only a redirect; enforcement is the API server's job.
+
+With no provider keys, the gateway still runs: every signal a provider would supply is reported as *not configured* and
+decisions are recorded as reduced assurance. Nothing is simulated to fill the gap.
+
+## Checks
+
+```bash
 npm run lint
 npm run typecheck
-npm run build      # type-check, bundle, write per-route entry points into dist/
-npm run preview    # serve the production build
+npm test            # 140+ tests; store tests are skipped without a database
+npm run test:db     # store tests against a real Postgres (creates and wipes portfolio_test)
+npm run build
 ```
 
-> npm 10.9 fails to resolve this dependency tree (`Cannot read properties of null
-> (reading 'edgesOut')`) when re-resolving. `npm ci` against the committed lockfile works; to
-> change dependencies use npm 11+ (`npx npm@latest install`).
+## Configuration
 
-To serve from a sub-path (for example GitHub Pages without a custom domain):
-`BASE_PATH=/portfolio-dashboard/ npm run build`.
+See `.env.example`. In production the server refuses to start without `SESSION_SECRET` (32+ characters) and
+`DATABASE_URL`, and lists every problem at once.
 
-## Layout
+| Provider | What it adds | Cost | Variable |
+| --- | --- | --- | --- |
+| Cloudflare Turnstile | Server-validated bot verification | Free | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` |
+| ipapi.is | Organisation, network type, coarse location, VPN/proxy/datacentre flags | Free, 1,000/day | `IPAPI_IS_KEY` |
+| IPinfo Lite | Second opinion on network operator and country | Free, unlimited | `IPINFO_TOKEN` |
+| Tor Project exit list | Tor exit membership | Free, no key | none |
+| AbuseIPDB | Abuse reports about an address | Free, 1,000/day | `ABUSEIPDB_API_KEY` |
 
-```
-src/
-  sim/          the simulation engine: pure TypeScript, no React, fully tested
-  content/      all site copy and project data
-  pages/        Home, CaseStudy, Avalanche
-  components/   SOC console, project previews, Avalanche views
-  lib/          ~100-line router, hooks
-  styles/       design tokens and CSS
-scripts/postbuild.mjs   copies index.html to each route + 404.html for static hosts
-```
+Details, limits and what was ruled out: [docs/PROVIDERS.md](docs/PROVIDERS.md).
 
-## The simulation
+## Documentation
 
-`runSimulation(config, policy)` in `src/sim/pipeline.ts` is a pure function. Given a seed,
-an alert count and a set of fault switches, it generates a synthetic world with a known
-ground truth, has three fictional scanners report on it for five scans, and runs the
-records through seven stages:
+- [Architecture](docs/ARCHITECTURE.md): how a request moves through the system
+- [Threat model](docs/THREAT-MODEL.md): trust boundaries, spoofing, abuse, what is out of scope
+- [Privacy](docs/PRIVACY.md): what is collected, on what basis, and for how long
+- [Providers](docs/PROVIDERS.md): what was evaluated, chosen and rejected
+- [Deploying to Railway](docs/DEPLOY-RAILWAY.md)
+- [Implementation checklist](docs/CHECKLIST.md): what is done, and what has only been tested locally
 
-ingest → normalize → deduplicate → identity & state → reconcile → risk context → prioritize
+## Honesty notes
 
-The UI only replays the reports that function returns. No number on screen is produced by
-animation code.
-
-The three sources model three delivery styles:
-
-- **harbor**: full snapshot scans pulled page by page. Absence is its only "fixed" signal.
-- **lantern**: incremental change feed read from a cursor, with explicit revisions.
-- **sieve**: pushed events, delivered at least once and in any order.
-
-Faults a visitor can switch on: HTTP 429s, duplicate deliveries, updates missing from the
-change feed, out-of-order events, a page that permanently fails, and findings that vanish
-from a scan without being fixed.
-
-### What the tests assert
-
-Across all 64 combinations of faults and several seeds (`src/sim/pipeline.test.ts`):
-
-- **Safety**: no finding that still exists is ever marked resolved.
-- **Liveness**: once the faults stop, state converges to exactly the ground truth.
-- **Stability**: the recommended work list is identical to a clean run's.
-
-The same engine run with a deliberately naive policy (missing means fixed, arrival order
-wins, no reconciliation) fails those properties under the same faults. That comparison is
-in the tests and on the page, so the safety tests are known to be able to fail.
-
-### What it is not
-
-Everything is synthetic: no real scanners, vendors, CVEs or organisations (identifiers
-use a `SYN-` prefix). It runs entirely in the browser and protects nothing. "Missing from
-two complete scans" is a policy choice, not a proof of remediation.
-
-## Security defaults
-
-- Production builds inject a Content-Security-Policy (`default-src 'none'`,
-  `connect-src 'none'`, scripts and fonts from `'self'` only). See `vite.config.ts`.
-- External links use `rel="noopener noreferrer"`.
-- The SOC console is scripted. It reads nothing about the visitor or their browser.
-
-## Deployment
-
-Not configured. `npm run build` produces a static `dist/` suitable for any static host.
-The original site's `CNAME` (markgraziano.com) has deliberately not been copied here.
+- The case-study company is synthetic. No record comes from any employer. It is unrelated to the live visitor data.
+- A public website cannot measure device posture (disk encryption, patching, EDR, management). The gateway says so in every
+  report rather than implying otherwise.
+- A browser fingerprint identifies a browser configuration, not a person. Recognition results state their confidence and
+  what argues against them.
+- This is a public portfolio. Nothing confidential is behind the gate; it demonstrates the pattern, and is enforced for real.
